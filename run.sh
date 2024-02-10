@@ -6,7 +6,8 @@ source .env
 if [ $# = 0 ]; then
 
   echo "doc(ker)     -> docker系の実行"
-  echo "                .ex: ./run.sh doc exec app bash"
+  echo "                .ex: ./run.sh doc ps"
+  echo "se(rver)     -> server系の内部実行"
   echo "  fl(ake8)     flake8の実行"
   echo "  b(ash)       bashの実行"
   echo "  i(nstall)    依存関係のzipファイル作成"
@@ -22,6 +23,11 @@ if [ $# = 0 ]; then
 elif [[ $1 =~ pre(-commit)? ]]; then
     docker-compose -f api/docker/docker-compose.yaml exec app poetry run pflake8
 elif [[ $1 =~ doc(ker)? ]]; then
+    shift;
+    echo docker-compose -f api/docker/docker-compose.yaml $@
+    docker-compose -f api/docker/docker-compose.yaml $@
+
+elif [[ $1 =~ se(rver)? ]]; then
 
     if [[ $2 =~ fl(ake8)? ]]; then
         echo docker-compose exec app poetry run pflake8 src/
@@ -33,7 +39,7 @@ elif [[ $1 =~ doc(ker)? ]]; then
         exit 1
     elif [[ $2 =~ in(stall)? ]]; then
         echo docker-compose run app ./run.sh install
-        docker-compose -f api/docker/docker-compose.yaml run --rm app ./run.sh install
+        docker-compose -f api/docker/docker-compose.yaml exec app ./run.sh install
         exit 1
     elif [[ $2 =~ fa(stapi)? ]]; then
         echo docker-compose exec app ./run.sh fastapi
@@ -53,8 +59,8 @@ elif [[ $1 =~ doc(ker)? ]]; then
 
     shift
 
-    echo docker-compose -f api/docker/docker-compose.yaml $@
-    docker-compose -f api/docker/docker-compose.yaml $@
+    echo docker-compose -f api/docker/docker-compose.yaml exec app $@
+    docker-compose -f api/docker/docker-compose.yaml exec app $@
 
 elif [ $1 = "db" ]; then
     echo -e "- local      : local_db\n- local_test : local_test_db\n"
@@ -80,7 +86,7 @@ elif [[ $1 =~ in(voke)? ]]; then
     npm run cdk:local synth
 
     echo sam local start-api
-    sam local start-api -t ./cdk.out/LambdaFastapiStack-dev.template.json --docker-network lambda_fastapi_backend
+    sam local start-api -t ./cdk.out/StampRallyStack-dev.template.json --docker-network stamp_rally_backend
 elif [[ $1 =~ mi(grate)? ]]; then
     if [ $# -eq 2 ]; then
         echo npm run env -- -e $2

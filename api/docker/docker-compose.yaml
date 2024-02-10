@@ -2,32 +2,31 @@ version: '3'
 services:
   app:
     restart: always
-    container_name: lambda_fastapi_app
-    hostname: gt_server
+    container_name: stamp_rally_app
+    hostname: sr_server
     build: .
     tty: true
     ports:
       - ${APP_PORT:-80}:80
     env_file:
       - app.env
+    environment:
+      - APP_PORT=${APP_PORT:-80}
+      - DB_PORT=${DB_PORT:-3306}
     volumes:
       - ../../api:/api
     working_dir: /api
     # command: bash -c "poetry install && /bin/bash"
     networks:
-      - lambda_fastapi_backend
+      - stamp_rally_backend
 
   db:
     image: mysql:8.0
     restart: always
-    container_name: lambda_fastapi_db
-    hostname: gt_db
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: local_db
-      MYSQL_USER: as
-      MYSQL_PASSWORD: os
-      TZ: Asia/Tokyo
+    container_name: stamp_rally_db
+    hostname: sr_db
+    env_file:
+      - mysql/.env
     ports:
       - ${DB_PORT:-3306}:3306
     # データを永続化させる場合
@@ -40,8 +39,8 @@ services:
       - ./mysql/conf.d:/etc/mysql/conf.d:sensitive
     # command: ['mysqld', '--lower_case_table_names=0']
     networks:
-      - lambda_fastapi_backend
+      - stamp_rally_backend
 
 networks:
-  lambda_fastapi_backend:
+  stamp_rally_backend:
     external: true

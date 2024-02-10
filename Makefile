@@ -15,7 +15,7 @@ install: check-docker check-pre-commit env_file
 	pre-commit install
 
 	@# sam local invoke 時の DB 接続用ネットワークの作成
-	docker network create lambda_fastapi_backend
+	docker network create stamp_rally_backend
 
 	@# docker実行用のapp.envの作成
 	npm run env

@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/cdk-lambda-fastapi.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/cdk-stamp-rally.ts",
   "watch": {
     "include": [
       "**"

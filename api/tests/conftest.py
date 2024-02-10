@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 from sqlalchemy.pool import NullPool
+from unittest.mock import MagicMock
 
 from database.base_class import Base
 from database.db import get_db
@@ -18,7 +19,7 @@ def anyio_backend():
     return 'asyncio'
 
 async_engine = create_async_engine(
-    url='mysql+aiomysql://hy:ia@lambda_fastapi_db:3306/local_test_db?charset=utf8mb4',
+    url='mysql+aiomysql://hy:ia@stamp_rally_db:3306/local_test_db?charset=utf8mb4',
     echo=True,
     poolclass=NullPool
 )
@@ -39,7 +40,7 @@ async def async_db_engine():
 
 # truncate all table to isolate tests
 @pytest.fixture()
-async def async_db(async_db_engine):
+async def async_db(async_db_engine, monkeypatch):
     async_session = sessionmaker(
         expire_on_commit=False,
         autocommit=False,
@@ -49,6 +50,7 @@ async def async_db(async_db_engine):
     )
 
     async with async_session() as session:
+        monkeypatch.setattr('database.db.get_db', MagicMock(return_value=session))
         await session.begin()
 
         yield session
@@ -56,7 +58,9 @@ async def async_db(async_db_engine):
         await session.rollback()
 
         for table in reversed(SQLModel.metadata.sorted_tables):
+            await session.execute(text('SET SESSION FOREIGN_KEY_CHECKS = 0'))
             await session.execute(text(f'TRUNCATE {table.name};'))
+            await session.execute(text('SET SESSION FOREIGN_KEY_CHECKS = 1'))
             await session.commit()
 
 

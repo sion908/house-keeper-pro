@@ -5,7 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DB_URL = os.environ.get(
     "DB_URL",
-    "mysql+aiomysql://as:os@lambda_fastapi_db:3306/local_db?charset=utf8mb4"
+    "mysql+aiomysql://as:os@stamp_rally_db:3306/local_db?charset=utf8mb4"
 )
 
 async_engine = create_async_engine(DB_URL, echo=True)
@@ -37,5 +37,20 @@ class Base(DeclarativeBase):
 
 
 async def get_db():
+    """
+    fastapiのルーティングで使う用のdb処理
+    """
     async with async_session() as session:
         yield session
+
+def session_aware(func):
+    """
+    fastapiのルーティング外で行われる処理で使うラッパー
+    """
+    async def wrapper(*args, **kwargs):
+        async with async_session() as session:
+            # デコレータ内で利用するために関数に値を渡す
+            kwargs["db"] = session
+            result = await func(*args, **kwargs)
+        return result
+    return wrapper

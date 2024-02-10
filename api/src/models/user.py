@@ -4,10 +4,11 @@ import uuid
 from enum import IntEnum
 from typing import Union
 
-from sqlalchemy import Column, String, select
-from sqlalchemy.dialects.mysql import TINYINT
+from sqlalchemy import String, select
+from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy_utils import UUIDType
 from sqlalchemy_utils.types.choice import ChoiceType
 from sqlalchemy_utils.types.password import PasswordType
@@ -46,22 +47,12 @@ class User(Base, TimeStampMixin):
             {**args, "comment": "ユーザー"},
         )
 
-    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
-    username = Column(
-        String(255, collation="utf8mb4_bin"),
-        unique=True,
-        nullable=True
-    )
-    password = Column(PasswordType(
-        schemes=[
-            'pbkdf2_sha512',
-            'md5_crypt'
-        ],
-        deprecated=['md5_crypt']
-    ))
-    sex = Column(ChoiceType(SexType, impl=TINYINT()), nullable=True)
-    age = Column(TINYINT, nullable=True)
-    # is_active = Column(Boolean, default=True, nullable=False)  # noqa:E800
+    id:Mapped[int] = mapped_column(SMALLINT(unsigned=True), primary_key=True)
+    lineUserID:Mapped[str] = mapped_column(VARCHAR(40), unique=True)
+    username:Mapped[str] = mapped_column(VARCHAR(48), nullable=True)
+    is_active:Mapped[bool] = mapped_column(BOOLEAN, default=True, nullable=False)
+    card = relationship("Card", backref="owner")
+    admin = relationship("Admin", backref="user")
 
     def convert_output(self):
         self.id = str(self.id)

@@ -1,4 +1,4 @@
-# lambda_fastapi_backend
+# stamp_rally_backend
 
 fastapiをdockerで開発し，AWSのlambdaにデプロイするためのレポジトリ.  
 backend用というわけではないですが，backend用に開発したのでそのまま名前についてます．  
@@ -63,7 +63,7 @@ npm run invoke
    ```
 2. sam の実行
    ```shell
-   sam local start-api -t ./cdk.out/LambdaFastapiStack-local.template.json --docker-network lambda_fastapi_backend
+   sam local start-api -t ./cdk.out/StampRallyStack-local.template.json --docker-network stamp_rally_backend
    ```
 
 ## localでの実行を行う場合
@@ -87,7 +87,7 @@ npm run invoke:ins  # 依存関係解決用のzipファイル作成とsynth,invo
 
 REAT の client ツールとして、vscodoe の拡張機能を利用  
 詳しくは[README.md](rest_client/README.md)で確認する  
-https://github.com/TheDesignium/lambda_fastapi_rest_client  
+https://github.com/TheDesignium/stamp_rally_rest_client  
 このレポジトリに実態は存在
 
 ## docs
@@ -133,7 +133,7 @@ or
 
 1. このリポジトリをクローンする
    ```shell
-   git clone --recursive git@github.com:TheDesignium/0_rd_lambda_fastapi_backend.git
+   git clone --recursive git@github.com:TheDesignium/0_rd_stamp_rally_backend.git
    ```
 2. 依存関係をダウンロードする
    ```shell
@@ -166,7 +166,7 @@ or
    ```
 7.  sam local invoke 時の DB 接続用ネットワークの作成
    ```shell
-   docker network create lambda_fastapi_backend
+   docker network create stamp_rally_backend
    ```
 8.  環境変数のコピー
    ```shell

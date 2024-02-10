@@ -36,19 +36,15 @@ def add_custom_openapi(app: FastAPI) -> None:
             return app.openapi_schema
         servers = [
             {
-                "url": "https://sample.amazonaws.com/dev",
-                "description": "aws developmentServer"
-            },
-            {
                 "url": "http://127.0.0.1:3000",
                 "description": "local sam"
             },
         ]
         openapi_schema = get_openapi(
-            title="lambda-fastapi",
+            title="stamp-rally",
             version="0.1.1",
             openapi_version="3.0.3",
-            description="LAMBDA-FASTAPIのAPI設計",
+            description="stamp-rallyのAPI設計",
             tags=tags_metadata,
             routes=app.routes,
             servers=servers

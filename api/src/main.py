@@ -2,12 +2,16 @@ from fastapi import FastAPI
 from mangum import Mangum
 
 from exception import add_exception_handlers
-from routers import user
+from routers import line
 from setting import DEBUG
 
 app = FastAPI(debug=DEBUG)
 
-app.include_router(user.router)
+app.include_router(
+    line.router,
+    prefix="/lineapi",
+)
+
 add_exception_handlers(app)
 
 handler = Mangum(app)

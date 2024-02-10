@@ -10,4 +10,7 @@ class Tags(str, Enum):
 
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
+CHANNEL_ACCESS_TOKEN = os.environ.get("CHANNEL_ACCESS_TOKEN")
+LINE_ACCESS_SECRET = os.environ.get("LINE_ACCESS_SECRET")
+
 logging.basicConfig(level=logging.INFO if DEBUG else logging.DEBUG)

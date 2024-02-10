@@ -1,74 +1,29 @@
 openapi: 3.0.3
 info:
-  title: lambda-fastapi
-  description: LAMBDA-FASTAPIのAPI設計
+  title: stamp-rally
+  description: stamp-rallyのAPI設計
   version: 0.1.1
 servers:
-- url: https://sample.amazonaws.com/dev
-  description: aws developmentServer
 - url: http://127.0.0.1:3000
   description: local sam
 paths:
-  /users/:
+  /lineapi/callback:
     post:
-      tags:
-      - user
-      summary: create user
-      description: 'Create a user with each the information:
-
-
-        - **username**(str):
-
-        - **password**(str):
-
-        - **sex**(int): [男性:0,女性:1,その他2]
-
-        - **age**(int):'
-      operationId: createUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreate'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OutputUser'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-      security:
-      - HTTPBasic: []
-  /users/{user_id}:
-    get:
-      tags:
-      - user
-      summary: read user
-      description: ユーザーIDを元にユーザー情報を取得する。
-      operationId: readUser
-      security:
-      - HTTPBasic: []
+      summary: line messaging
+      description: ユーザーからメッセージが送信された際、LINE Message APIからこちらのメソッドが呼び出されます。
+      operationId: lineMessaging
       parameters:
-      - name: user_id
-        in: path
-        required: true
+      - name: x-line-signature
+        in: header
+        required: false
         schema:
-          type: string
-          title: User Id
+          title: X-Line-Signature
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/OutputUser'
+              schema: {}
         '422':
           description: Validation Error
           content:
@@ -86,66 +41,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    OutputUser:
-      properties:
-        id:
-          type: string
-          title: Id
-          description: uuid
-        username:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Username
-        sex:
-          anyOf:
-          - $ref: '#/components/schemas/SexType'
-          - type: 'null'
-          description: 0:男性,1:女性,2:その他
-        age:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Age
-      type: object
-      required:
-      - id
-      - username
-      - sex
-      - age
-      title: OutputUser
-    SexType:
-      type: integer
-      enum:
-      - 0
-      - 1
-      - 2
-      title: SexType
-    UserCreate:
-      properties:
-        username:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Username
-        password:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Password
-        sex:
-          anyOf:
-          - $ref: '#/components/schemas/SexType'
-          - type: 'null'
-          description: 0:男性,1:女性,2:その他
-        age:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Age
-      type: object
-      title: UserCreate
-      description: Input
     ValidationError:
       properties:
         loc:
@@ -167,10 +62,6 @@ components:
       - msg
       - type
       title: ValidationError
-  securitySchemes:
-    HTTPBasic:
-      type: http
-      scheme: basic
 tags:
 - name: user
   description: ユーザーに関するAPI

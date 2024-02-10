@@ -23,16 +23,17 @@ repos:
         description: "pepに対応するためのlinter"
         entry: docker-compose -f api/docker/docker-compose.yaml exec -T app ./run.sh pflake8
         files: api/src/
+        exclude: src/database/migrations/versions/
         types: [python]
         language: python
-    -   id: pytest
-        name: pytest-docker-compose
-        description: "pytestの実行"
-        entry: docker-compose -f api/docker/docker-compose.yaml exec -T app poetry run pytest
-        files: "api/src/"
-        types: [python]
-        pass_filenames: false
-        language: python
+    # -   id: pytest
+    #     name: pytest-docker-compose
+    #     description: "pytestの実行"
+    #     entry: docker-compose -f api/docker/docker-compose.yaml exec -T app poetry run -v -s pytest
+    #     files: "api/src/"
+    #     types: [python]
+    #     pass_filenames: false
+    #     language: python
     -   id: swagger
         name: generate-openapi-file
         description: "openAPIが生成されているかの確認"

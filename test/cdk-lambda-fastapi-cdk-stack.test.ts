@@ -1,18 +1,18 @@
 import { Template } from "aws-cdk-lib/assertions";
 import * as cdk from "aws-cdk-lib";
-import { LambdaFastapiStack } from "../lib/lambda-fastapi-cdk-stack";
+import { StampRallyStack } from "../lib/stamp-rally-cdk-stack";
 
-describe("lambdaFastapiStack", () => {
+describe("stampRallyStack", () => {
   test("synthesizes the way we expect", () => {
     const app = new cdk.App();
 
     // Create the ProcessorStack.
-    const lambdaFastapiStack = new LambdaFastapiStack(app, "lambdaFastapiStack", {
+    const stampRallyStack = new StampRallyStack(app, "stampRallyStack", {
       stageName: 'dev'
     });
 
     // Prepare the stack for assertions.
-    const template = Template.fromStack(lambdaFastapiStack);
+    const template = Template.fromStack(stampRallyStack);
 
     // Assert it creates the function with the correct properties...
     template.hasResourceProperties("AWS::Lambda::Function", {

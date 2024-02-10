@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { LambdaFastapiStack } from "../lib/lambda-fastapi-cdk-stack";
+import { StampRallyStack } from "../lib/stamp-rally-cdk-stack";
 import { ENVS } from "../lib/env";
 
 const app = new cdk.App();
@@ -16,9 +16,9 @@ if(!Object.values(ENVS).includes(stageName)){
   );
 }
 
-const lambdaFastapiStack = new LambdaFastapiStack(app, `LambdaFastapiStack-${stageName}`,{
+const stampRallyStack = new StampRallyStack(app, `StampRallyStack-${stageName}`,{
   stageName: stageName,
 });
 
-cdk.Tags.of(lambdaFastapiStack).add("Project", "lambda-fastapi")
-cdk.Tags.of(lambdaFastapiStack).add("Project_env", `lambda-fastapi-${stageName}`)
+cdk.Tags.of(stampRallyStack).add("Project", "stamp-rally")
+cdk.Tags.of(stampRallyStack).add("Project_env", `stamp-rally-${stageName}`)

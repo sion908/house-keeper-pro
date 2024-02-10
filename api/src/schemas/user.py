@@ -10,10 +10,9 @@ from .mixin import ForOrm
 class UserCreate(BaseModel, ForOrm):
     """Input"""
 
+    lineUserID: Optional[str] = None
     username: Optional[str] = None
-    password: Optional[str] = None
-    sex: Optional[SexType] = Field(None, description="0:男性,1:女性,2:その他")
-    age: Optional[int] = None
+    is_active: Optional[bool] = Field(None, description="activeか")
 
 
 class OutputUser(BaseModel, ForOrm):
