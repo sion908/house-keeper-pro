@@ -4,38 +4,15 @@ import uuid
 from enum import IntEnum
 from typing import Union
 
-from sqlalchemy import String, select
-from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, TINYINT, VARCHAR
+from sqlalchemy import select
+from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, VARCHAR
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy_utils import UUIDType
-from sqlalchemy_utils.types.choice import ChoiceType
-from sqlalchemy_utils.types.password import PasswordType
 
 from database.base_class import Base
 
 from .mixins import TimeStampMixin
-
-
-class SexType(IntEnum):
-    MAN = 0
-    WOMAN = 1
-    OTHER = 2
-
-    @classmethod
-    def from_str(cls, input_string: str) -> Union[int, None]:
-        try:
-            return cls[input_string.upper()]
-        except KeyError:
-            return None
-
-    @classmethod
-    def get_label(cls, value: int) -> Union[str, None]:
-        for member in cls:
-            if member.value == value:
-                return member.name
-        return None  # 一致するラベルが見つからない場合
 
 
 class User(Base, TimeStampMixin):
@@ -47,11 +24,11 @@ class User(Base, TimeStampMixin):
             {**args, "comment": "ユーザー"},
         )
 
-    id:Mapped[int] = mapped_column(SMALLINT(unsigned=True), primary_key=True)
-    lineUserID:Mapped[str] = mapped_column(VARCHAR(40), unique=True)
-    username:Mapped[str] = mapped_column(VARCHAR(48), nullable=True)
-    is_active:Mapped[bool] = mapped_column(BOOLEAN, default=True, nullable=False)
-    card = relationship("Card", backref="owner")
+    id: Mapped[int] = mapped_column(SMALLINT(unsigned=True), primary_key=True)
+    lineUserID: Mapped[str] = mapped_column(VARCHAR(40), unique=True)
+    username: Mapped[str] = mapped_column(VARCHAR(48), nullable=True)
+    is_active: Mapped[bool] = mapped_column(BOOLEAN, default=True, nullable=False)
+    card = relationship("Card", backref="owner", uselist=False)
     admin = relationship("Admin", backref="user")
 
     def convert_output(self):

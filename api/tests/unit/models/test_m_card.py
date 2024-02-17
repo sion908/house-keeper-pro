@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from httpx_auth import Basic
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from models import User, Card
 from crud.user import create as create_user
@@ -21,9 +21,12 @@ class TestCardModel:
         await async_db.commit()
         await async_db.refresh(card)
 
-        db_card = (
-            await async_db.execute(select(Card).filter_by(id=card.id).options(selectinload(Card.owner)))
-        ).scalar_one()
+        db_card = await async_db.scalar(
+            select(Card)
+                .where(Card.id == card.id)
+                .options(joinedload(Card.owner))
+                .limit(1)
+        )
 
         assert db_card.id == card.id
         assert create_user == card.owner

@@ -32,7 +32,7 @@ class RallyConfiguration(Base, TimeStampMixin):
     description:Mapped[str] = mapped_column(VARCHAR(48), nullable=True, comment="説明")
     liff_id:Mapped[str] = mapped_column(VARCHAR(24), nullable=True, comment="スタンプラリー用のliffID")
     stamp_count:Mapped[int] = mapped_column(TINYINT(unsigned=True), default=9, comment="スタンプの数")
-    half_complete_count:Mapped[int] = mapped_column(TINYINT(unsigned=True), default=6, comment="中間達成スタンプの数")
+    half_complete_count:Mapped[int] = mapped_column(TINYINT(unsigned=True), nullable=True, comment="中間達成スタンプの数")
     is_active:Mapped[bool] = mapped_column(BOOLEAN, default=False, comment="active")
 
     card_img:Mapped[str] = mapped_column(URLType, nullable=True, comment="スタンプカード用の画像URL")

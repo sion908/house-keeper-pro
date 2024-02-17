@@ -1,12 +1,14 @@
 import asyncio
 
 import pytest
+from typing import Generator
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 from sqlalchemy.pool import NullPool
+from unittest import mock
 from unittest.mock import MagicMock
 
 from database.base_class import Base
@@ -18,7 +20,7 @@ from models import *  # noqa:F401, F403
 def anyio_backend():
     return 'asyncio'
 
-async_engine = create_async_engine(
+async_engine_mock = create_async_engine(
     url='mysql+aiomysql://hy:ia@stamp_rally_db:3306/local_test_db?charset=utf8mb4',
     echo=True,
     poolclass=NullPool
@@ -29,12 +31,12 @@ SQLModel = Base
 # drop all database every time when test complete
 @pytest.fixture(scope='session')
 async def async_db_engine():
-    async with async_engine.begin() as conn:
+    async with async_engine_mock.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
-    yield async_engine
+    yield async_engine_mock
 
-    async with async_engine.begin() as conn:
+    async with async_engine_mock.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)
 
 
@@ -63,10 +65,44 @@ async def async_db(async_db_engine, monkeypatch):
             await session.execute(text('SET SESSION FOREIGN_KEY_CHECKS = 1'))
             await session.commit()
 
+# truncate all table to isolate tests
+# async def mock_session_aware(async_db_engine, monkeypatch):
+@pytest.fixture(scope="session", autouse=True)
+def mock_session_aware():
+    def _mock_session_aware(func):
+        async_session = sessionmaker(
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+            bind=async_engine_mock,
+            class_=AsyncSession,
+        )
+        async def _wrapper(*args, **kwargs):
+            async with async_session() as session:
+                # デコレータ内で利用するために関数に値を渡す
+                kwargs["db"] = session
+                await session.begin()
+
+                result = await func(*args, **kwargs)
+
+                await session.rollback()
+
+                for table in reversed(SQLModel.metadata.sorted_tables):
+                    await session.execute(text('SET SESSION FOREIGN_KEY_CHECKS = 0'))
+                    await session.execute(text(f'TRUNCATE {table.name};'))
+                    await session.execute(text('SET SESSION FOREIGN_KEY_CHECKS = 1'))
+                    await session.commit()
+            return result
+        return _wrapper
+    # mock.patch("database.db.session_aware", _mock_session_aware).start()
+    with mock.patch("database.db.session_aware", _mock_session_aware) as _mock:
+        yield _mock
+
+
 
 async def override_get_db():
     async_session = sessionmaker(
-        autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession
+        autocommit=False, autoflush=False, bind=async_engine_mock, class_=AsyncSession
     )
     async with async_session() as session:
         yield session
@@ -76,7 +112,7 @@ app.dependency_overrides[get_db] = override_get_db
 # pytestmark = pytest.mark.anyio
 
 @pytest.fixture(scope='session')
-async def async_client() -> AsyncClient:
+async def async_client():
     # return AsyncClient(app=app, base_url='http://localhost')
     async with AsyncClient(app=app, base_url="http://test") as client:
         print("Client is ready")

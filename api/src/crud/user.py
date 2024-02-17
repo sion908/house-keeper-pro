@@ -1,14 +1,11 @@
 from datetime import datetime
 from typing import AsyncIterator
 
-from fastapi import HTTPException
-from sqlalchemy import select, text
-from sqlalchemy.dialects.mysql import insert
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.functions import current_timestamp
+from sqlalchemy.orm import joinedload
 
-from models import User
+from models import Card, Stamp, User
 from schemas.user import UserCreate
 
 
@@ -26,21 +23,43 @@ async def get_by_pk(
 async def get_by_lineUserID(
     db: AsyncSession,
     lineUserID: str
-) -> AsyncIterator[User]| None:
+) -> AsyncIterator[User] | None:
     user = await db.scalar(
         select(User).where(User.lineUserID == lineUserID).limit(1)
     )
 
     return user
 
+
+async def get_by_lineUserID_with_card(
+    db: AsyncSession,
+    lineUserID: str
+) -> AsyncIterator[User] | None:
+    user = await db.scalar(
+        select(User)
+            .where(User.lineUserID == lineUserID)
+            .options(
+                joinedload(User.card),
+                joinedload(User.card).joinedload(Card.stamps),
+                joinedload(User.card).joinedload(Card.stamps).joinedload(Stamp.place)
+            )
+            .limit(1)
+    )
+    if user and user.card and user.card.stamps:
+        # Stamp を Place.id でソートし、Place の id と name のみを抽出
+        user.card.stamps.sort(key=lambda stamp: stamp.place.id)
+
+    return user
+
+
 async def upsert(
     db: AsyncSession,
     values: dict,
     no_create: bool = False
-) -> User| None:
+) -> User | None:
     user = await get_by_lineUserID(db=db, lineUserID=values["lineUserID"])
     if user:
-        for (k,v) in values.items():
+        for (k, v) in values.items():
             setattr(user, k, v)
         user.updated_at = datetime.now()
 
@@ -55,19 +74,18 @@ async def upsert(
     await db.refresh(user)
 
     return user
-    # なんか動かないのであきらめた パフォーマンス的にはこれをすべきなので，あとで頑張る
-    # まだ一個分なのでいいでしょう
-    # user = await db.execute(
-    #     text(
-    #         "INSERT `user` (`lineUserID`,`username`,`is_active`,`updated_at`,`created_at`) "+
-    #         "VALUE (:lineUserID,:username,:is_active,NOW(),NOW()) "+
-    #         "ON DUPLICATE KEY UPDATE `username`=VALUES(username),`is_active`=VALUES(is_active),`updated_at`=VALUES(updated_at);"
-    #     ),
-    #     values
-    # )
-
-
+    # なんか動かないのであきらめた パフォーマンス的にはこれをすべきなので，あとで頑張る  # noqa:E800
+    # まだ一個分なのでいいでしょう  # noqa:E800
+    # user = await db.execute(  # noqa:E800
+    #     text(  # noqa:E800
+    #         "INSERT `user` (`lineUserID`,`username`,`is_active`,`updated_at`,`created_at`) "+  # noqa:E800
+    #         "VALUE (:lineUserID,:username,:is_active,NOW(),NOW()) "+  # noqa:E800
+    #         "ON DUPLICATE KEY UPDATE `username`=VALUES(username),`is_active`=VALUES(is_active),`updated_at`=VALUES(updated_at);"  # noqa:E800, E501
+    #     ),  # noqa:E800
+    #     values  # noqa:E800
+    # )  # noqa:E800
     return user
+
 
 async def update_username(
     db: AsyncSession,
@@ -88,14 +106,11 @@ async def create(db: AsyncSession, user: UserCreate) -> User:
     db_user = User(**user.model_dump())
 
     db.add(db_user)
-    try:
-        await db.commit()
-    except IntegrityError as e:
-        await db.rollback()
-        raise HTTPException(status_code=400, detail=f"Error:{e}")
+    await db.commit()
 
     await db.refresh(db_user)
     return db_user
+
 
 async def get_or_create(db: AsyncSession, lineUserID: str) -> User:
     user = db.scalar(

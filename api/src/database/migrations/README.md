@@ -1,3 +1,4 @@
+
 Generic single-database configuration.
 
 ## ディレクトリ

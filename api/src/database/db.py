@@ -1,7 +1,14 @@
 import os
 
+from linebot.models import TextSendMessage
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
+from services.line import line_bot_api
+from setting import logger
+
+logger.name = __name__
+
 
 DB_URL = os.environ.get(
     "DB_URL",
@@ -10,7 +17,7 @@ DB_URL = os.environ.get(
 
 async_engine = create_async_engine(DB_URL, echo=True)
 async_session = sessionmaker(
-    autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession
+    expire_on_commit=False, autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession
 )
 
 
@@ -48,9 +55,27 @@ def session_aware(func):
     fastapiのルーティング外で行われる処理で使うラッパー
     """
     async def wrapper(*args, **kwargs):
-        async with async_session() as session:
-            # デコレータ内で利用するために関数に値を渡す
-            kwargs["db"] = session
-            result = await func(*args, **kwargs)
-        return result
+        try:
+            async with async_session() as session:
+                # デコレータ内で利用するために関数に値を渡す
+                kwargs["db"] = session
+                result = await func(*args, **kwargs)
+            return result
+        except Exception as e:
+            import traceback
+            exc_traceback = traceback.extract_tb(e.__traceback__)
+            filename, line_number, func_name, text = exc_traceback[-1]
+            logger.error(f"{exc_traceback}")
+            logger.error(f"{exc_traceback[0]}")
+            logger.error(
+                f"An exception occurred in file '{filename}' on line {line_number}.\n"+
+                f"Exception message: {e}"
+            )
+
+            if "rep_token" in kwargs:
+                line_bot_api.reply_message(
+                    kwargs.get("rep_token"),
+                    TextSendMessage("何かしらの問題が起こりました．\nもう一度お試しください")
+                )
+
     return wrapper

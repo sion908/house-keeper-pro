@@ -22,9 +22,9 @@ class Place(Base, TimeStampMixin):
     id: Mapped[int] = mapped_column(TINYINT(unsigned=True), primary_key=True)
     is_active: Mapped[bool] = mapped_column(BOOLEAN(), default=False, comment="active")
     is_base: Mapped[bool] = mapped_column(BOOLEAN(), default=False, comment="base")
-    name: Mapped[int] = mapped_column(VARCHAR(48), nullable=True, comment="店名")
-    altname: Mapped[int] = mapped_column(VARCHAR(48), nullable=True, comment="表示名")
-    access: Mapped[int] = mapped_column(VARCHAR(48), nullable=True, comment="住所")
+    name: Mapped[str] = mapped_column(VARCHAR(48), nullable=True, comment="店名")
+    altname: Mapped[str] = mapped_column(VARCHAR(48), nullable=True, comment="表示名")
+    access: Mapped[str] = mapped_column(VARCHAR(48), nullable=True, comment="住所")
     gpsLatitude: Mapped[int] = mapped_column(DOUBLE(9, 6), nullable=True, comment="Latitude")
     gpsLongitude: Mapped[int] = mapped_column(DOUBLE(9, 6), nullable=True, comment="Longtitude")
     rally_configuration_id: Mapped[int] = mapped_column(

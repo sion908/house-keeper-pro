@@ -15,11 +15,11 @@ from schemas.user import UserCreate
 class TestStampModel:
 
     async def test_create_stamp_def(
-            self,
-            async_db: AsyncSession,
-            create_user: User,
-            create_card: 'function',
-            create_place: Place
+        self,
+        async_db: AsyncSession,
+        create_user: User,
+        create_card: 'function',
+        create_place: Place
     ) -> None:
         card = await create_card(owner = create_user)
 
@@ -87,7 +87,7 @@ class TestStampModel:
         stamp_attrs = [{
             "is_stamped":True,
             "card_id":card.id,
-            "place_id":p[0].id
+            "place_id":p.id
         } for p in places]
 
         await async_db.execute(
@@ -106,5 +106,5 @@ class TestStampModel:
             assert db_stamp[0].is_stamped == True
             assert db_stamp[0].card_id == card.id
             assert type(db_stamp[0].card) == Card
-            assert db_stamp[0].place_id == place[0].id
+            assert db_stamp[0].place_id == place.id
             assert type(db_stamp[0].place) == Place

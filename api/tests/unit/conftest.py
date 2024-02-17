@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from models import User, Card, Place, RallyConfiguration, Admin, LineConfiguration
+from models import User, Card, Place, RallyConfiguration, Admin, LineConfiguration, Stamp
 from crud.user import get_by_pk
 from schemas.user import UserCreate
 
@@ -42,7 +42,7 @@ async def create_card(async_db: AsyncSession):
 
 @pytest.fixture()
 async def create_rally_configuration(async_db: AsyncSession):
-    rally_configuration = RallyConfiguration()
+    rally_configuration = RallyConfiguration(is_active=True)
     async_db.add(rally_configuration)
 
     await async_db.commit()
@@ -101,8 +101,39 @@ async def create_places(async_db: AsyncSession):
         await async_db.commit()
         db_places = (
             await async_db.execute(select(Place).filter(Place.name.startswith("names_")))
-        ).all()
+        ).scalars().all()
 
         return db_places
 
     yield _create_places
+
+@pytest.fixture()
+async def create_card_with_another(async_db: AsyncSession):
+    async def _create_card_with_another(
+        owner: User,
+        stamp_count: int=5,
+        places: list[Place]=None
+    ):
+        if not places:
+            places = create_places(count=stamp_count)
+
+        card = Card(owner=owner)
+
+        async_db.add(card)
+
+        await async_db.commit()
+        await async_db.refresh(card)
+        stamp_attrs = [{
+            "is_stamped":True,
+            "card_id":card.id,
+            "place_id":p.id
+        } for p in places]
+
+        await async_db.execute(
+            Stamp.__table__.insert(),
+            stamp_attrs
+        )
+        await async_db.commit()
+        return card
+
+    yield _create_card_with_another

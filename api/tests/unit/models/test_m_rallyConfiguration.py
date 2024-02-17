@@ -27,7 +27,7 @@ class TestRallyConfigurations:
         assert db_rc.name == None
         assert db_rc.description == None
         assert db_rc.stamp_count == 9
-        assert db_rc.half_complete_count == 6
+        assert db_rc.half_complete_count == None
         assert db_rc.is_active == False
         assert db_rc.card_img == None
         assert db_rc.stamp_img == None

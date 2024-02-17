@@ -27,8 +27,6 @@ if DEBUG:
 
     generate_openapi(app)
 
-    logging.basicConfig(level=logging.DEBUG)
-
     async def set_body(request: Request, body: bytes):
         async def receive() -> Message:
             return {'type': 'http.request', 'body': body}

@@ -51,9 +51,14 @@ elif [[ $1 =~ se(rver)? ]]; then
         mv api/openapi.yaml rest_client/openapi.yaml
         exit 1
     elif [[ $2 =~ (py)?te(st)? ]]; then
+        pytest_cmd="pytest"
+        if [[ $2 =~ lf ]]; then
+            pytest_cmd="${pytest_cmd} --lf"
+        fi
+        # やったもののみ --lf
         shift;shift;
-        echo docker-compose exec app poetry run pytest $@
-        docker-compose -f api/docker/docker-compose.yaml exec app poetry run pytest $@
+        echo docker-compose exec app poetry run $pytest_cmd $@
+        docker-compose -f api/docker/docker-compose.yaml exec app poetry run $pytest_cmd $@
         exit 1
     fi
 
@@ -66,7 +71,7 @@ elif [ $1 = "db" ]; then
     echo -e "- local      : local_db\n- local_test : local_test_db\n"
     if command -v mysql &> /dev/null; then
         echo 'mysql -u root -h 127.0.0.1 --port 33306 -t local_db -p'
-        mysql -u root -h 127.0.0.1 --port 33306 -t local_db -p
+        mysql -u root -h 127.0.0.1 --port 53306 -t local_db -p
     else
         echo "docker-compose exec db bash"
         echo " -> mysql -u root -p"
