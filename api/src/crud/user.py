@@ -31,13 +31,18 @@ async def get_by_lineUserID(
     return user
 
 
-async def get_by_lineUserID_with_card(
+async def get_with_card(
     db: AsyncSession,
-    lineUserID: str
+    lineUserID: str = None,
+    id: int = None
 ) -> AsyncIterator[User] | None:
+    stmt = select(User)
+    if lineUserID:
+        stmt = stmt.where(User.lineUserID == lineUserID)
+    elif id:
+        stmt = stmt.where(User.id == id)
     user = await db.scalar(
-        select(User)
-            .where(User.lineUserID == lineUserID)
+        stmt
             .options(
                 joinedload(User.card),
                 joinedload(User.card).joinedload(Card.stamps),

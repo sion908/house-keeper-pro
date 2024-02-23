@@ -43,6 +43,24 @@ export class StampRallyStack extends cdk.Stack {
       description: "A layer to hold the FastAPI and Mangum dependencies",
     });
 
+    const lineFn = new lambda.Function(this, `SRLinehandler-${stageName}`, {
+      codeSigningConfig,
+      runtime: lambda.Runtime.PYTHON_3_10,
+      handler: "line_event.line_handler",
+      code: lambda.Code.fromAsset(path.join(__dirname, "../api/src"),{
+        exclude: ['alembic.ini', 'tests', 'database/migrations','__pycache__']
+      }),
+      layers: [layer], // レイヤーを設定
+      environment: {
+        ...environment,
+        STAGE_NAME: stageName
+      },
+      timeout: cdk.Duration.seconds( 3 * 60 ),
+      memorySize: 256,
+      logRetention: stageName==ENVS.PROD? logs.RetentionDays.SIX_MONTHS : logs.RetentionDays.ONE_WEEK,
+      functionName: `SRLinehandler-${stageName}`
+    });
+
     // Lambda関数の作成
     const fn = new lambda.Function(this, `SRhandler-${stageName}`, {
       codeSigningConfig,
@@ -53,28 +71,13 @@ export class StampRallyStack extends cdk.Stack {
       }),
       layers: [layer], // レイヤーを設定
       environment: {
-        ...environment
+        ...environment,
+        SRLinehandlerName: lineFn.functionName,
+        STAGE_NAME: stageName
       },
       timeout: cdk.Duration.seconds( 3 * 60 ),
       memorySize: 256,
       logRetention: stageName==ENVS.PROD? logs.RetentionDays.SIX_MONTHS : logs.RetentionDays.ONE_WEEK
-    });
-
-    const lineFn = new lambda.Function(this, `SRLinehandler-${stageName}`, {
-      codeSigningConfig,
-      runtime: lambda.Runtime.PYTHON_3_10,
-      handler: "line_event.line_handler",
-      code: lambda.Code.fromAsset(path.join(__dirname, "../api/src"),{
-        exclude: ['alembic.ini', 'tests', 'database/migrations','__pycache__']
-      }),
-      layers: [layer], // レイヤーを設定
-      environment: {
-        ...environment
-      },
-      timeout: cdk.Duration.seconds( 3 * 60 ),
-      memorySize: 256,
-      logRetention: stageName==ENVS.PROD? logs.RetentionDays.SIX_MONTHS : logs.RetentionDays.ONE_WEEK,
-      functionName: `SRLinehandler-${stageName}`
     });
 
     // 👇 create a policy statement

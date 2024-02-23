@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import User, Card, Stamp
-from crud.user import get_by_lineUserID, upsert, get_by_lineUserID_with_card
+from crud.user import get_by_lineUserID, upsert, get_with_card
 
 @pytest.mark.asyncio()
 class TestGetByLineUserID:
@@ -120,7 +120,7 @@ class TestUpsert:
 
 
 @pytest.mark.asyncio()
-class TestGetByLineUserIDWithCard:
+class TestGetWithCard:
     async def test_main(
             self,
             async_db: AsyncSession,
@@ -131,12 +131,17 @@ class TestGetByLineUserIDWithCard:
         stamp_count = 5
         places = await create_places(count=stamp_count)
         await create_card_with_another(owner=create_user, places=places)
-        user = await get_by_lineUserID_with_card(db=async_db, lineUserID=create_user.lineUserID)
 
-        assert type(user) == User
-        assert type(user.card) == Card
-        assert len(user.card.stamps) == stamp_count
-        assert type(user.card.stamps[0]) == Stamp
+        for kwar in [
+            {"lineUserID": create_user.lineUserID},
+            {"id": create_user.id}
+        ]:
+            user = await get_with_card(db=async_db, **kwar)
+
+            assert type(user) == User
+            assert type(user.card) == Card
+            assert len(user.card.stamps) == stamp_count
+            assert type(user.card.stamps[0]) == Stamp
 
     async def test_with_no_card(
             self,
@@ -144,6 +149,6 @@ class TestGetByLineUserIDWithCard:
             create_user: User
         ) -> None:
 
-        user = await get_by_lineUserID_with_card(db=async_db, lineUserID=create_user.lineUserID)
+        user = await get_with_card(db=async_db, lineUserID=create_user.lineUserID)
         assert type(user) == User
         assert getattr(user, "card", None) is None

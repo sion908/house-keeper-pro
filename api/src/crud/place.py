@@ -7,6 +7,15 @@ from sqlalchemy.orm import load_only
 from models import Place
 
 
+async def get_by_id(db: AsyncSession, place_id: int) -> AsyncIterator[Place]| None:
+    place = await db.scalar(
+        select(Place)
+            .where(Place.id == place_id)
+            .limit(1)
+    )
+    return place
+
+
 async def get_active_places(
     db: AsyncSession,
     limit: int = None,

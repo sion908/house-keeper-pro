@@ -3,13 +3,14 @@ from linebot.models import FlexSendMessage, LocationSendMessage, QuickReply, Tex
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from crud.card import create_with_stamps
+from crud.card import create_with_stamps, update as update_card
+from crud.stamp import update as update_stamp
 from crud.place import get_active_places
 from crud.rallyconfigration import get_one as get_one_rc
-from crud.user import get_by_lineUserID, get_by_lineUserID_with_card
+from crud.user import get_by_lineUserID, get_with_card
 from database.db import session_aware
-from models import AttainmentType, AwardType, Card, RallyConfiguration, User
-from services.line import line_bot_api
+from models import AttainmentType, AwardType, Place, RallyConfiguration, User
+from dependencies import line_bot_api
 from setting import logger
 
 logger.name = __name__
@@ -49,7 +50,10 @@ class CardService():
         stamped = self._get_stamped_card()
         if self.card.attainment == AttainmentType.ATTAINMENT_NONE:
             if stamped == setting.stamp_count:
-                return [AwardType.AWARD_MIDWAY, AwardType.AWARD_COMPLETE], True
+                if setting.half_complete_count:
+                    return [AwardType.AWARD_MIDWAY, AwardType.AWARD_COMPLETE], True
+                else:
+                    return [AwardType.AWARD_COMPLETE], True
             elif setting.half_complete_count and stamped > setting.half_complete_count:
                 return [AwardType.AWARD_MIDWAY], True
             else:
@@ -62,19 +66,45 @@ class CardService():
 
         return [], False
 
-    def set_prize(self, awards:list) -> None:
+    async def set_prize(self, awards:list) -> None:
         if AwardType.AWARD_COMPLETE in awards:
             self.card.attainment = AttainmentType.ATTAINMENT_COMPLETE
         elif AwardType.AWARD_MIDWAY in awards:
             self.card.attainment = AttainmentType.ATTAINMENT_MIDWAY
         else:
             return
-        self.card.save()
+        self.card = await update_card(db=self.db, card=self.card)
+
+    async def seal_stamp(self, place_id:int) -> Place:
+
+        sealed_stamp = None
+        for stamp in self.card.stamps:
+            if stamp.place.id == place_id:
+                sealed_stamp = stamp
+                break
+        if not sealed_stamp:
+            raise "Error"
+
+        context = {
+            "name": sealed_stamp.place.name
+        }
+
+        if sealed_stamp.is_stamped:
+            context["already"] = True
+        else:
+            sealed_stamp.is_stamped = True
+            await update_stamp(db=self.db, stamp=sealed_stamp)
+            awards, prizable = self._can_win_prize()
+            if prizable:
+                context['awards'] = awards
+                await self.set_prize(awards=awards)
+        context["count"] = self._get_stamped_card()
+        return context
 
     @classmethod
     @session_aware
     async def showCards(self, rep_token:str, luserid:str, db:AsyncSession=None):
-        user = await get_by_lineUserID_with_card(db=db, lineUserID=luserid)
+        user = await get_with_card(db=db, lineUserID=luserid)
 
         if user and hasattr(user, "card"):
             service = self()
@@ -106,7 +136,7 @@ class CardService():
         setting = self.rally_configuration
         contents = []
         items = []
-        offsetList = ["none", "33.5%", "66.5%"]
+        offsetList = [["14%","23%"],["58.5%","6.5%"],["58.5%","40%"],["14%","56.5%"],["58.5%","73.5%"]]
         for i, stamp in enumerate(stamps):
             if stamp.is_stamped:
                 contents.append({
@@ -116,21 +146,21 @@ class CardService():
                     "aspectRatio": "1:1",
                     "aspectMode": "fit",
                     "size": "xs",
-                    "offsetTop": offsetList[i//3],
-                    "offsetStart": f"{i%3*30+10}%"
+                    "offsetTop": offsetList[i][0],
+                    "offsetStart": offsetList[i][1]
                 })
-            else:
-                place = stamp.place
-                if place.access:
-                    items.append({
-                        "type": "action",
-                        "action": {
-                            "type": "postback",
-                            "label": place.altname,
-                            "data": f"place={place.id}",
-                            "displayText": f"{place.name}の地図を表示する",
-                        }
-                    })
+            # else:
+            #     place = stamp.place
+            #     if place.access:
+            #         items.append({
+            #             "type": "action",
+            #             "action": {
+            #                 "type": "postback",
+            #                 "label": place.altname,
+            #                 "data": f"place={place.id}",
+            #                 "displayText": f"{place.name}の地図を表示する",
+            #             }
+            #         })
 
         alt_text = "抽選に参加できます" if self._can_win_prize()[1] else f"のこり{setting.stamp_count-self._get_stamped_card()}つ"
 
@@ -174,7 +204,7 @@ class CardService():
                     "offsetEnd": "0px",
                     "paddingAll": "none",
                     "paddingTop": "none",
-                    "height": "60%"
+                    "height": "50%"
                 }
                 ],
                 "paddingAll": "0px"

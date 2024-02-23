@@ -35,10 +35,3 @@ class User(Base, TimeStampMixin):
         self.id = str(self.id)
         self.password = "*****"
         return self
-
-    @classmethod
-    async def read_by_id(
-        cls, db: AsyncSession, user_id: int
-    ) -> 'User' | None:
-        stmt = select(cls).where(cls.id == user_id)
-        return await db.scalar(stmt.order_by(cls.id))

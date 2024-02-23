@@ -1,28 +1,16 @@
-# flake8: noqa: E800,F401
-import boto3
-# from django.shortcuts import get_object_or_404
-import requests
-# from django.http import Http404
-from fastapi import Depends, HTTPException
-# https://github.com/line/line-bot-sdk-python
-from linebot import LineBotApi, WebhookHandler
 from linebot.models import (
-    FlexSendMessage,
     FollowEvent,
-    JoinEvent,
-    MessageEvent,
     PostbackEvent,
-    StickerMessage,
-    TextMessage,
     TextSendMessage,
     UnfollowEvent,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from crud.user import upsert as upsert_user
-from database.db import async_session, get_db, session_aware
+from database.db import session_aware
 from services.card import CardService
-from services.line import handler, line_bot_api
+from dependencies import line_bot_api
+from dependencies.line import handler
 from setting import logger
 
 logger.name = __name__

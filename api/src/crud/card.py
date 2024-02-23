@@ -1,19 +1,17 @@
 from datetime import datetime
 from typing import AsyncIterator
+from datetime import datetime
 
-from fastapi import HTTPException
 from sqlalchemy import select, text
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload
-from sqlalchemy.sql.functions import current_timestamp
+from sqlalchemy.orm import joinedload
 
 from models import Card, Place, Stamp, User
-from schemas.user import UserCreate
 
 
-async def get_by_id(db: AsyncSession, card_id: str=None, card: Card=None) -> AsyncIterator[Card]| None:
+async def get_by_id(db: AsyncSession, card_id: int=None, card: Card=None) -> AsyncIterator[Card]| None:
     if card_id is None and card is not None:
         card_id = card.id
     card = await db.scalar(
@@ -55,4 +53,16 @@ async def create_with_stamps(db: AsyncSession, user: User, places: list[Place]) 
 
     await db.commit()
     card = await get_by_id(db=db, card_id=card.id)
+    return card
+
+async def update(
+    db: AsyncSession,
+    card: Card
+) -> AsyncIterator[Card]:
+    card.updated_at = datetime.now()
+    db.add(card)
+
+    await db.commit()
+    await db.refresh(card)
+
     return card

@@ -1,0 +1,128 @@
+<script>
+  var video = document.createElement("video");
+  var canvasElement = document.getElementById("canvas");
+  var canvas = canvasElement.getContext("2d");
+  var loadingMessage = document.getElementById("loadingMessage");
+  var batsudiv=document.getElementsByClassName('batsu')[0];
+  this.a1=document.getElementsByClassName('1a');
+  this.s1=document.getElementsByClassName('1s');
+  this.a2=document.getElementsByClassName('2a');
+  this.s2=document.getElementsByClassName('2s');
+
+  function generateReg(liff_id, ver="2023-f") {
+    // var reg=/https:\/\/liff\.line\.me\/1657251421-qOdzWROa\/\?ver=2023-f\&place_id=(\d+)/;
+    self.reg=new RegExp(`^https://liff\.line\.me/${liff_id}/\\?ver=${ver}\\&place_id=(\\d+)`);
+  }
+
+  function drawLine(begin, end, color) {
+    canvas.beginPath();
+    canvas.moveTo(begin.x, begin.y);
+    canvas.lineTo(end.x, end.y);
+    canvas.lineWidth = 4;
+    canvas.strokeStyle = color;
+    canvas.stroke();
+  }
+
+  // Use facingMode: environment to attemt to get the front camera on phones
+  const startScan=()=>navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+    video.srcObject = stream;
+    video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+    video.play();
+    requestAnimationFrame(tick);
+  });
+
+  function tick() {
+    loadingMessage.innerText = "⌛ Loading video..."
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    loadingMessage.hidden = true;
+    canvasElement.hidden = false;
+    ccw=document.getElementsByClassName('container')[0].clientWidth
+
+    canvasElement.height = ccw;
+    canvasElement.width = ccw;
+    let h=video.videoHeight, w=video.videoWidth;
+    if(h<w){
+      canvas.drawImage(video, Math.floor((w-ccw)/2), 0, ccw, ccw);
+    }else{
+      canvas.drawImage(video,0,Math.floor((h-ccw)/2),ccw, ccw);
+    }
+    var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+    var code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: "dontInvert",
+    });
+    if (code) {
+      drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
+      drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
+      drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
+      drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+      console.log(code.data)
+      var res = code.data.match(self.reg);
+      if(res){
+        confQR(res[1])
+        return
+      }
+    }
+    }
+    requestAnimationFrame(tick);
+
+  }
+
+  function inputDescriptions(shop){
+    const elem = document.getElementsByClassName('shopName')[0];
+    var text =`店名:${shop.name}`;
+    elem.innerHTML = text;
+    document.getElementById('popup').style.display='block';
+  }
+
+  const confQR=(placeID) => {
+    form.place_id.value=placeID;
+    const formData = new FormData(form);
+    var jsonObject = {};
+    formData.forEach((value, key) => { jsonObject[key] = value; });
+    const options = {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(jsonObject),
+    }
+    const url = form.getAttribute('action');
+    fetch(url, options)
+      .then((res)=>res.json())
+      .then(data =>{
+        document.getElementById("loading").hidden=true;
+        if (!data.name){
+          tick()
+        }else{
+          batsudiv.onclick=()=>{
+            document.getElementById('popup').style.display='none';
+            startScan()
+          }
+          placename=data.name
+          document.getElementsByClassName('placeName')[0].innerText=data.name;
+          if("already" in data){
+            document.getElementById('stamp_result').innerHTML="<p>2度目です!!</p>";
+          }else if("awards" in data){
+            award_list = []
+            if(data.awards.indexOf(1)!=-1){award_list.push("half complete")}
+            if(data.awards.indexOf(2)!=-1){award_list.push("complete")}
+            text="<p>景品を受け取る</p><ul id='award-list'>"
+            award_list.forEach(data=>{text+=`<li><p>${data}</p></li>`})
+            text+='</ul>'
+            document.getElementById('stamp_result').innerHTML=text;
+          }else if("error" in data){
+            document.getElementById('description').innerHTML="<p>開催までお待ちください</p>";
+          }else{
+            document.getElementById('stamp_num').innerText=data.count;
+          }
+          document.getElementById('popup').style.display='block';
+        }
+      }).catch(e=>{
+        tick()
+      });
+
+  }
+
+  const form = document.forms.stampForm
+</script>

@@ -8,9 +8,9 @@ from linebot.models import Profile
 
 from models import User
 from line_event import line_handler
-from services.line import line_bot_api
+from dependencies import line_bot_api
 from crud.user import get_by_lineUserID
-from services.line import handler
+from services.lineHandler import handler
 
 # @pytest.mark.asyncio()
 # class TestReadUser:
@@ -31,7 +31,6 @@ from services.line import handler
 #                 "mode": "active"
 #             },
 #             {"destination": "U4fd733d4734d228a16d700bf7b104458"})
-#         breakpoint()
 #         mocker_get_profile.assert_called_once()
 
 #         user = get_by_lineUserID(db=async_db, lineUserID=lineUserID)

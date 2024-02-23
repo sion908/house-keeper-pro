@@ -29,6 +29,7 @@ elif [[ $1 =~ ins(tall)? ]]; then
   echo pwd
   pwd
 
+  rm -rf /api/python_modules/python
   echo python -m pip install -r requirements.txt -t /api/python_modules/python/lib/python3.10/site-packages/
   python -m pip install -r requirements.txt -t /api/python_modules/python/lib/python3.10/site-packages/ --upgrade
   echo installed lib

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}スタンプラリー{% endblock %}
+{% block header_title %}スタンプラリー{% endblock header_title %}
+{% block head %}
+  {{ super() }}
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  {% include 'css/popup.html' %}
+  {% include 'css/liff_employ.html' %}
+{% endblock %}
+{% block afinitliff %}
+  this.accessToken = liff.getAccessToken();
+  console.log(this.accessToken);
+  const formElements = document.forms.stampForm;
+  formElements.lineToken.value=this.accessToken;
+  {% if place %}
+    const place_id = '{{ place.id }}';
+    mkload();
+    confQR(place_id)
+  {% else %}
+    startScan()
+  {% endif %}
+{% endblock %}
+{% block content %}
+  <h2>スタンプラリー</h2>
+  <div class="status"></div>
+
+  <div id="loadingMessage">🎥 Unable to access video stream (please make sure you have a webcam enabled)</div>
+  <canvas id="canvas" hidden></canvas>
+  <div>QRコードをスキャンしてください</div>
+  <div id="loading" style="width:40%;margin: 0 auto;" class="loading"></div>
+  <div id="popup">
+    <input class="batsu" value="x" type="button">
+    <div id="popup-body">
+      <div id="description">
+        {% if place %}
+            <p class="placeName">{{ place.name }}</p>
+        {% else %}
+            <p class="placeName"></p>
+        {% endif %}
+            <div id="stamp_result"><p><span id="stamp_num"></span>こ目</p></div>
+
+      </div>
+
+      <form name="stampForm" action="https://939st2fdyl.execute-api.ap-northeast-1.amazonaws.com/{{ STAGE_NAME }}/seal/" method="POST">
+        <input type="hidden" name="lineToken">
+        {% if place %}
+            <input type="hidden" name="place_id" value="{{ place.id }}">
+        {% else %}
+            <input type="hidden" name="place_id" value="">
+        {% endif %}
+        <input type='hidden' name='csrf-token' value="{{ csrf_token }}"/>
+      </form>
+
+      <button type="button" id="btn-back" class="1a 2s" hidden>戻る</button>
+
+    </div>
+    </div>
+
+
+  {# <script src="{{ static('js/stamp/stamp.js') }}"></script> #}
+  {# <script src="{{ static('js/loading.js') }}"></script> #}
+  {% include "js/stamp.html" %}
+  {% include "js/loading.html" %}
+  <script>
+    generateReg(liff_id="{{ liff_id }}", ver="lequor")
+  </script>
+{% endblock %}

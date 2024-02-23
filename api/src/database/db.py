@@ -4,7 +4,7 @@ from linebot.models import TextSendMessage
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from services.line import line_bot_api
+from dependencies import line_bot_api
 from setting import logger
 
 logger.name = __name__

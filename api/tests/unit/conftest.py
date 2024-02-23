@@ -6,9 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from models import User, Card, Place, RallyConfiguration, Admin, LineConfiguration, Stamp
-from crud.user import get_by_pk
-from schemas.user import UserCreate
+from models import User, Card, Place, RallyConfiguration, LineConfiguration, Stamp
 
 @pytest.fixture()
 async def create_line_configuration(async_db: AsyncSession):
@@ -115,7 +113,7 @@ async def create_card_with_another(async_db: AsyncSession):
         places: list[Place]=None
     ):
         if not places:
-            places = create_places(count=stamp_count)
+            places = await create_places(count=stamp_count)
 
         card = Card(owner=owner)
 
@@ -124,7 +122,6 @@ async def create_card_with_another(async_db: AsyncSession):
         await async_db.commit()
         await async_db.refresh(card)
         stamp_attrs = [{
-            "is_stamped":True,
             "card_id":card.id,
             "place_id":p.id
         } for p in places]

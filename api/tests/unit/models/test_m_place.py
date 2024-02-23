@@ -1,21 +1,14 @@
 import pytest
-from fastapi import status
-from httpx import AsyncClient
-from httpx_auth import Basic
-from sqlalchemy import select, insert
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 from decimal import Decimal
 
-from models import User, Card, Place, RallyConfiguration
-from crud.user import create as create_user
-from schemas.user import UserCreate
+from models import Place, RallyConfiguration
 
 @pytest.mark.asyncio()
 class TestPlaceModel:
 
     async def test_create_place_with_no_attr(self, async_db: AsyncSession) -> None:
-        # breakpoint()
         place = Place()
         async_db.add(place)
 

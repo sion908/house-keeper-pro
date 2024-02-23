@@ -1,14 +1,9 @@
 import pytest
-from fastapi import status
-from httpx import AsyncClient
-from httpx_auth import Basic
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from models import User, Card, Place, Stamp
-from crud.user import create as create_user
-from schemas.user import UserCreate
 
 
 @pytest.mark.asyncio()
@@ -101,7 +96,6 @@ class TestStampModel:
 
         assert len(db_stamps) == count
         for i, (db_stamp, place) in enumerate(zip(db_stamps, places)):
-            # breakpoint()
             assert db_stamp[0].id == i+1
             assert db_stamp[0].is_stamped == True
             assert db_stamp[0].card_id == card.id

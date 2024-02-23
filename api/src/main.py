@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from mangum import Mangum
 
 from exception import add_exception_handlers
-from routers import line
+from routers import line, seal
 from setting import DEBUG
 
 app = FastAPI(debug=DEBUG)
@@ -10,6 +10,10 @@ app = FastAPI(debug=DEBUG)
 app.include_router(
     line.router,
     prefix="/lineapi",
+)
+app.include_router(
+    seal.router,
+    prefix="/seal",
 )
 
 add_exception_handlers(app)

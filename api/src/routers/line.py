@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header, HTTPException, Request
 from linebot.exceptions import InvalidSignatureError
 
-from services.line import handler
+from services.lineHandler import handler
 
 router = APIRouter()
 

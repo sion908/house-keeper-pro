@@ -9,6 +9,10 @@ tags_metadata = [
         "name": Tags.user,
         "description": "ユーザーに関するAPI",
     },
+    {
+        "name": Tags.seal,
+        "description": "スタンプを押す用のAPIとか",
+    },
 ]
 
 

@@ -1,4 +1,3 @@
-
 class ForOrm():
 
     class Config:

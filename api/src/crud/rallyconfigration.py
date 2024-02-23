@@ -10,7 +10,6 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.functions import current_timestamp
 
 from models import RallyConfiguration
-from schemas.user import UserCreate
 
 
 async def get_one(

@@ -10,7 +10,7 @@ if [ $# = 0 ]; then
   echo "se(rver)     -> server系の内部実行"
   echo "  fl(ake8)     flake8の実行"
   echo "  b(ash)       bashの実行"
-  echo "  i(nstall)    依存関係のzipファイル作成"
+  echo "  in(stall)    依存関係のzipファイル作成"
   echo "  fa(stapi)    fastApiの実行"
   echo "  op(enapi)    openAPIの再生成"
   echo "  (py)te(st)   pytestの実行"
