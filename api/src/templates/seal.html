@@ -41,7 +41,7 @@
 
       </div>
 
-      <form name="stampForm" action="https://939st2fdyl.execute-api.ap-northeast-1.amazonaws.com/{{ STAGE_NAME }}/seal/" method="POST">
+      <form name="stampForm" action="" method="POST">
         <input type="hidden" name="lineToken">
         {% if place %}
             <input type="hidden" name="place_id" value="{{ place.id }}">

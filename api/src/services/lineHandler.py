@@ -1,16 +1,22 @@
+import json
+
 from linebot.models import (
     FollowEvent,
+    ImagemapSendMessage,
+    MessageEvent,
     PostbackEvent,
+    TextMessage,
     TextSendMessage,
     UnfollowEvent,
 )
+from linebot.models.imagemap import BaseSize, ImagemapArea, URIImagemapAction
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from crud.user import upsert as upsert_user
 from database.db import session_aware
-from services.card import CardService
 from dependencies import line_bot_api
 from dependencies.line import handler
+from services.card import CardService
 from setting import logger
 
 logger.name = __name__
@@ -20,13 +26,10 @@ logger.name = __name__
 
 # メッセージイベントの場合の処理
 # かつテキストメッセージの場合
-# @handler.add(MessageEvent, message=TextMessage)
-# async def handle_text_message(event):
-#     # メッセージでもテキストの場合はオウム返しする
-#     line_bot_api.reply_message(
-#         event.reply_token,
-#         TextSendMessage(text=event.message.text)
-#     )
+@handler.add(MessageEvent, message=TextMessage)
+async def handle_text_message(event):
+    if event.message.text == "スタンプカードを確認する":
+        await CardService.showCards(rep_token=event.reply_token, luserid=event.source.user_id)
 
 # メッセージイベントの場合の処理
 # かつスタンプメッセージの場合
@@ -74,7 +77,47 @@ async def handle_follow(event, db:AsyncSession=None):
     line_bot_api.reply_message(
         event.reply_token,
         [
-            TextSendMessage(text="こんにちは"),
+            TextSendMessage(
+                text="・Barの楽しみ方塾です。バーに行ったことが無い人でも気軽に行けるバーのスタンプラリー開催中。\n"+
+                     "・５エリア中、３エリアのバーを巡ったら、抽選で景品をプレゼント！\n"+
+                     "  スタンプがそろったら表示されるURLから応募してね！\n"+
+                     "・スタンプラリー対象店舗は、配布している冊子か、Barの楽しみ方塾のSNS（旧Twitter、Instagram）を参照ください。"
+                ),
+            ImagemapSendMessage(
+                base_url = "https://stamprally-sake.s3.ap-northeast-1.amazonaws.com/helloMapImg",
+                alt_text = "Bar巡りをお楽しみください．各種リンクはこちらより．",
+                base_size = BaseSize(1024, 1024),
+                actions = [
+                    URIImagemapAction(
+                        link_uri="https://www.google.com/maps/d/u/0/edit?mid=11BB3QUD3YAmgEOandosNejMn97KZahA&usp=sharing",
+                        area=ImagemapArea(
+                            x=512,
+                            y=0,
+                            width=512,
+                            height=512,
+                        )
+                    ),
+                    URIImagemapAction(
+                        link_uri="https://twitter.com/BAR_nagasaki",
+                        area=ImagemapArea(
+                            x=0,
+                            y=512,
+                            width=512,
+                            height=512,
+                        )
+                    ),
+                    URIImagemapAction(
+                        link_uri="https://www.instagram.com/cowbeff11?utm_source=qr&igsh=dXpmY3MyOG1nODJ5",
+                        area=ImagemapArea(
+                            x=512,
+                            y=512,
+                            width=512,
+                            height=512,
+                        )
+                    )
+                ]
+            )
+                # https://res.cloudinary.com/djutwrn9m/image/upload/v1709456291/imageMap_mbvgob.png
             # FlexSendMessage(alt_text="チラシ", contents=stampPanf())
             # # TextSendMessage(text='画面下のメニューより、BAR-GAIチケットの購入・利用、お持ちのチケットの確認ができます。\n'
             #                 # + 'チャットは自動返信となります。ご不明点はメニュー「Q&A」よりお問合せください')

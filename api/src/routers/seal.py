@@ -1,18 +1,16 @@
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.db import get_db
-
-from crud.place import get_by_id as get_place_by_id
 from crud.card import create_with_stamps
-from crud.user import get_with_card
+from crud.place import get_by_id as get_place_by_id
 from crud.rallyconfigration import get_one
+from crud.user import get_with_card
+from database.db import get_db
+from dependencies import CsrfProtect, get_lineuser_by_token, templates
 from schemas.seal import StampSealForm
 from services.card import CardService
-from setting import Tags
-from dependencies import CsrfProtect, templates, get_lineuser_by_token
-from setting import logger, STAGE_NAME
+from setting import STAGE_NAME, Tags, logger
 
 logger.name = __name__
 

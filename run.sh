@@ -98,10 +98,8 @@ elif [[ $1 =~ mi(grate)? ]]; then
         npm run env -- -e $2
     fi
     echo docker-compose doc exec app ./run.sh alembic migrate
-    docker-compose -f api/docker/docker-compose.yaml up app -d
-    docker-compose -f api/docker/docker-compose.yaml exec app ./run.sh alembic migrate
+    docker-compose -f api/docker/docker-compose.yaml run --rm app ./run.sh al mi
     npm run env
-    docker-compose -f api/docker/docker-compose.yaml up app -d
     exit 1
 
 elif [[ $1 =~ de?p(loy)? ]]; then

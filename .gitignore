@@ -21,3 +21,6 @@ lib/.env.yaml
 
 # for docs
 !api/docs/separate.js
+
+img/
+shop/

@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.mysql import BOOLEAN, DOUBLE, TINYINT, VARCHAR
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy_utils.types.url import URLType
 
 from database.base_class import Base
 
@@ -27,6 +28,7 @@ class Place(Base, TimeStampMixin):
     access: Mapped[str] = mapped_column(VARCHAR(48), nullable=True, comment="住所")
     gpsLatitude: Mapped[int] = mapped_column(DOUBLE(9, 6), nullable=True, comment="Latitude")
     gpsLongitude: Mapped[int] = mapped_column(DOUBLE(9, 6), nullable=True, comment="Longtitude")
+    stamp_img:Mapped[str] = mapped_column(URLType, nullable=True, comment="スタンプ用の画像URL")
     rally_configuration_id: Mapped[int] = mapped_column(
         TINYINT(unsigned=True),
         ForeignKey('rallyconfiguration.id'),

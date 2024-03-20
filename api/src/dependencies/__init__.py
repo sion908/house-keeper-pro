@@ -2,4 +2,4 @@
 from .basic import verify_from_api
 from .csrf import CsrfProtect
 from .jinja2 import templates
-from .line import line_bot_api, get_lineuser_by_token
+from .line import get_lineuser_by_token, line_bot_api

@@ -1,9 +1,9 @@
 # flake8: noqa: E800,F401
-import boto3
-import requests
 import inspect
 import json
+
 import boto3
+import requests
 from fastapi import HTTPException
 from linebot import LineBotApi, WebhookHandler, WebhookPayload
 from linebot.exceptions import InvalidSignatureError
@@ -25,12 +25,11 @@ from linebot.models.events import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 from crud.user import create as create_user
 from crud.user import get_by_lineUserID, update_username
 from models import User
 from schemas.user import UserCreate
-from setting import CHANNEL_ACCESS_TOKEN, LINE_ACCESS_SECRET, logger, SRLinehandlerName
+from setting import CHANNEL_ACCESS_TOKEN, LINE_ACCESS_SECRET, SRLinehandlerName, logger
 
 logger.name = __name__
 

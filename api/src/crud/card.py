@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import AsyncIterator
-from datetime import datetime
 
 from sqlalchemy import select, text
 from sqlalchemy.dialects.mysql import insert

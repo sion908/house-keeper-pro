@@ -23,7 +23,7 @@ fastapi-csrf-protect = "^0.3.3"
 
 
 [tool.poetry.group.dev.dependencies]
-alembic = "^1.11.2"
+alembic = "^1.13.1"
 python-dateutil = "^2.8.2"
 requests = "^2.31.0"
 httpx = "^0.25"
@@ -54,6 +54,10 @@ flake8-eradicate = "^1.5.0"
 flake8-unused-arguments = "^0.0.13"
 flake8-pytest-style = "^1.7.2"
 pyproject-flake8 = "^6.1.0"
+
+
+[tool.poetry.group.alembic.dependencies]
+alembic = "^1.13.1"
 
 [build-system]
 requires = ["poetry-core"]

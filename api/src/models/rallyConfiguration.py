@@ -39,6 +39,7 @@ class RallyConfiguration(Base, TimeStampMixin):
     stamp_img:Mapped[str] = mapped_column(URLType, nullable=True, comment="スタンプ用の画像URL")
     half_complete_img:Mapped[str] = mapped_column(URLType, nullable=True, comment="中間達成用の画像URL")
     complete_img:Mapped[str] = mapped_column(URLType, nullable=True, comment="達成用の画像URL")
+    form_url:Mapped[str] = mapped_column(URLType, nullable=True, comment="アンケートフォーム用URL")
 
     line_configuration_id:Mapped[int] = mapped_column(TINYINT(unsigned=True),
                   ForeignKey('lineconfiguration.id'),

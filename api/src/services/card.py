@@ -3,14 +3,15 @@ from linebot.models import FlexSendMessage, LocationSendMessage, QuickReply, Tex
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from crud.card import create_with_stamps, update as update_card
-from crud.stamp import update as update_stamp
+from crud.card import create_with_stamps
+from crud.card import update as update_card
 from crud.place import get_active_places
 from crud.rallyconfigration import get_one as get_one_rc
+from crud.stamp import update as update_stamp
 from crud.user import get_by_lineUserID, get_with_card
 from database.db import session_aware
-from models import AttainmentType, AwardType, Place, RallyConfiguration, User
 from dependencies import line_bot_api
+from models import AttainmentType, AwardType, Place, RallyConfiguration, User
 from setting import logger
 
 logger.name = __name__
@@ -33,7 +34,7 @@ class CardService():
 
         self.card = await create_with_stamps(db=self.db, user=self.user, places=places)
 
-    def _get_stamped_card(self):
+    def _get_stamped_count(self):
         if hasattr(self, "stamped_count"):
             return getattr(self, "stamped_count", 0)
         else:
@@ -47,7 +48,7 @@ class CardService():
 
     def _can_win_prize(self) -> tuple[list, bool]:
         setting = self.rally_configuration
-        stamped = self._get_stamped_card()
+        stamped = self._get_stamped_count()
         if self.card.attainment == AttainmentType.ATTAINMENT_NONE:
             if stamped == setting.stamp_count:
                 if setting.half_complete_count:
@@ -98,7 +99,7 @@ class CardService():
             if prizable:
                 context['awards'] = awards
                 await self.set_prize(awards=awards)
-        context["count"] = self._get_stamped_card()
+        context["count"] = self._get_stamped_count()
         return context
 
     @classmethod
@@ -109,19 +110,16 @@ class CardService():
         if user and hasattr(user, "card"):
             service = self()
             await service.async_init(db=db, user=user)
-            stamped_count = service._get_stamped_card()
-            message = []
-            (awards, had_awards) = service._can_win_prize()
-            if had_awards:
-                message = [TextSendMessage(f"{stamped_count}個達成!\n"+
-                f"{ len(awards) }回抽選に参加できます")]
-            message.append(FlexSendMessage(**service._makeCardBubble()))
+            message=[FlexSendMessage(**service._makeCardBubble())]
+            if service.rally_configuration.form_url and service.rally_configuration.half_complete_count <= service._get_stamped_count():
+                form_text = f"スタンプが貯まりました。\nここから応募してください。\n{service.rally_configuration.form_url}"
+                message.append(TextSendMessage(text=form_text))
         else:
             rally_configuration = await get_one_rc(db=db, is_active=True)
             if rally_configuration:
                 service = self()
                 await service.async_init(db=db, user=user, rally_configuration=rally_configuration)
-                stamped_count = service._get_stamped_card()
+                stamped_count = service._get_stamped_count()
                 message = [
                     FlexSendMessage(**service._makeCardBubble())
                 ]
@@ -141,7 +139,7 @@ class CardService():
             if stamp.is_stamped:
                 contents.append({
                     "type": "image",
-                    "url": setting.stamp_img,
+                    "url": stamp.place.stamp_img or setting.stamp_img,
                     "position": "absolute",
                     "aspectRatio": "1:1",
                     "aspectMode": "fit",
@@ -162,9 +160,9 @@ class CardService():
             #             }
             #         })
 
-        alt_text = "抽選に参加できます" if self._can_win_prize()[1] else f"のこり{setting.stamp_count-self._get_stamped_card()}つ"
+        alt_text = "応募できます" if self._can_win_prize()[1] else f"のこり{setting.stamp_count-self._get_stamped_count()}つ"
 
-        if card.attainment == AttainmentType.ATTAINMENT_COMPLETE:
+        if setting.stamp_count == self._get_stamped_count():
             contents.append({
                 "type": "image",
                 "url": setting.complete_img,
@@ -172,7 +170,7 @@ class CardService():
                 "size": "80%"
             })
 
-        elif card.attainment == AttainmentType.ATTAINMENT_MIDWAY:
+        elif setting.half_complete_count and setting.half_complete_count <= self._get_stamped_count():
             contents.append({
                 "type": "image",
                 "url": setting.half_complete_img,

@@ -121,6 +121,19 @@
       }).catch(e=>{
         tick()
       });
+      self.liff
+        .sendMessages([
+          {
+            type: "text",
+            text: "スタンプカードを確認する",
+          },
+        ])
+        .then(() => {
+          console.log("message sent");
+        })
+        .catch((err) => {
+          console.log("error", err);
+        });
 
   }
 

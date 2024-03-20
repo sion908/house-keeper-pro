@@ -2,8 +2,9 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi_csrf_protect.exceptions import CsrfProtectError
 
-from .exceptions import SimpleException
 from setting import logger
+
+from .exceptions import SimpleException
 
 logger.name = __name__
 

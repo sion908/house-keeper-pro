@@ -1,5 +1,5 @@
-from typing import AsyncIterator
 from datetime import datetime
+from typing import AsyncIterator
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
