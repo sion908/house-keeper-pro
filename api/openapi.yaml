@@ -35,7 +35,16 @@ paths:
       tags:
       - seal
       summary: seal stamp disp
-      description: 'return seal dispray'
+      description: 'return seal dispray:
+
+
+        - **username**(str):
+
+        - **password**(str):
+
+        - **sex**(int): [男性:0,女性:1,その他2]
+
+        - **age**(int):'
       operationId: sealStampDisp
       parameters:
       - name: place_id
