@@ -29,7 +29,7 @@ from crud.user import create as create_user
 from crud.user import get_by_lineUserID, update_username
 from models import User
 from schemas.user import UserCreate
-from setting import CHANNEL_ACCESS_TOKEN, LINE_ACCESS_SECRET, SRLinehandlerName, logger
+from setting import CHANNEL_ACCESS_TOKEN, LINE_ACCESS_SECRET, STAGE_NAME, HKPLinehandlerName, logger
 
 logger.name = __name__
 
@@ -45,6 +45,11 @@ async def get_lineuser_by_token(db:AsyncSession, token, create=False) -> list[Us
         を得る.
         tokenからユーザーIDが取れる場合はとにかくUserを 作る
     """
+
+    if STAGE_NAME=="local":
+        from crud.user import get_by_pk as get_user_by_pk
+        user = await get_user_by_pk(db=db,user_id=1)
+        return [user, None]
     # getでエラーようにtryしてるけどエラーはいたときは何をすればいいんだ？
     if not token:
         print("get_lineuser_by_token:not token")
@@ -117,7 +122,7 @@ class MyWebhookHandler(WebhookHandler):
         for event in body_json['events']:
             Lambda = boto3.client("lambda")
             Lambda.invoke(
-                FunctionName=SRLinehandlerName,
+                FunctionName=HKPLinehandlerName,
                 InvocationType='Event',
                 Payload=json.dumps({
                     "event": event,

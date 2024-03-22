@@ -3,7 +3,7 @@
 <head>
     {% block head %}
     {% include 'css/liff_style.html' %}
-    <title>{% block title %}{% endblock %} - BARの楽しみ方塾</title>
+    <title>{% block title %}{% endblock %}</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     {% block initliff %}
     <script>window.onload=()=>{
@@ -19,7 +19,7 @@
 <body>
     <header>
   <div class="header_title">
-    <a>{% block header_title %}スタンプラリー{% endblock header_title %}</a>
+    <a>{% block header_title %}掃除{% endblock header_title %}</a>
   </div>
 
 </header>
@@ -30,7 +30,7 @@
   </div>
   <footer>
       {% block footer %}
-      &copy; Copyright 2024 by {#<a href="{{ url('accounts:top') }}">#}BARの楽しみ方塾{#</a>#}.
+      &copy; Copyright 2024 by {#<a href="{{ url('accounts:top') }}">#}シェアソリューソンズ{#</a>#}.
       {% endblock %}
   </footer>
 </body>

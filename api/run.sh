@@ -31,7 +31,7 @@ elif [[ $1 =~ ins(tall)? ]]; then
 
   rm -rf /api/python_modules/python
   echo python -m pip install -r requirements.txt -t /api/python_modules/python/lib/python3.10/site-packages/
-  python -m pip install -r requirements.txt -t /api/python_modules/python/lib/python3.10/site-packages/ --upgrade
+  python -m pip install -r requirements.txt -t /api/python_modules/python/lib/python3.10/site-packages/ --upgrade --verbose
   echo installed lib
   if [ ! -e python ]; then
     mkdir python
@@ -89,7 +89,7 @@ elif [[ $1 =~ fa(stapi)? ]]; then
   cd src/
   echo poetry run uvicorn main:app
   poetry install
-  poetry run uvicorn main:app --reload --host 0.0.0.0 --port 80
+  poetry run uvicorn main:app --reload --log-level debug --host 0.0.0.0 --port 80
 
 elif [[ $1 =~ (py)?te(st)? ]]; then
   shift;

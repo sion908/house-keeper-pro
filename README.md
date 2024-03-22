@@ -1,4 +1,4 @@
-# stamp_rally_backend
+# house_keeper_pro_backend
 
 fastapiをdockerで開発し，AWSのlambdaにデプロイするためのレポジトリ.  
 backend用というわけではないですが，backend用に開発したのでそのまま名前についてます．  
@@ -63,7 +63,7 @@ npm run invoke
    ```
 2. sam の実行
    ```shell
-   sam local start-api -t ./cdk.out/StampRallyStack-local.template.json --docker-network stamp_rally_backend
+   sam local start-api -t ./cdk.out/HouseKeeperProStack-local.template.json --docker-network house_keeper_pro_backend
    ```
 
 ## localでの実行を行う場合
@@ -87,7 +87,7 @@ npm run invoke:ins  # 依存関係解決用のzipファイル作成とsynth,invo
 
 REAT の client ツールとして、vscodoe の拡張機能を利用  
 詳しくは[README.md](rest_client/README.md)で確認する  
-https://github.com/TheDesignium/stamp_rally_rest_client  
+https://github.com/TheDesignium/house_keeper_pro_rest_client  
 このレポジトリに実態は存在
 
 ## docs
@@ -133,7 +133,7 @@ or
 
 1. このリポジトリをクローンする
    ```shell
-   git clone --recursive git@github.com:TheDesignium/0_rd_stamp_rally_backend.git
+   git clone --recursive git@github.com:TheDesignium/0_rd_house_keeper_pro_backend.git
    ```
 2. 依存関係をダウンロードする
    ```shell
@@ -166,7 +166,7 @@ or
    ```
 7.  sam local invoke 時の DB 接続用ネットワークの作成
    ```shell
-   docker network create stamp_rally_backend
+   docker network create house_keeper_pro_backend
    ```
 8.  環境変数のコピー
    ```shell
@@ -212,3 +212,4 @@ or
 
 - [NEC ソリューションイノベータ Advent Calendar 2022](https://qiita.com/advent-calendar/2022/nec_solution_innovators)
 - [CDK の APIGateway+Lambdan 構成を OpenAPI の定義から作成する](https://qiita.com/stake15/items/2616a568593d48e5bd16)
+- [minio](https://qiita.com/reflet/items/3e0f07bc9d64314515c1)

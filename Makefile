@@ -15,7 +15,7 @@ install: check-docker check-pre-commit env_file
 	pre-commit install
 
 	@# sam local invoke 時の DB 接続用ネットワークの作成
-	docker network create stamp_rally_backend
+	docker network create house_keeper_pro_backend
 
 	@# docker実行用のapp.envの作成
 	npm run env
@@ -42,6 +42,9 @@ create_env:
 
 	@# docker compose用のプロジェクト名、ポートの指定ファイルの準備
 	@cp api/docker/.env.sample $(DOCKER_ENV)
+
+	@# docker compose用のプロジェクト名、ポートの指定ファイルの準備
+	@cp api/docker/mysql/.env.sample api/docker/mysql/.env
 
 	@which code > /dev/null 2>&1 && (code $(CDK_ENV) $(DOCKER_ENV);)
 

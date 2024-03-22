@@ -2,8 +2,8 @@ version: '3'
 services:
   app:
     restart: always
-    container_name: stamp_rally_app
-    hostname: sr_server
+    container_name: hkp_app
+    hostname: hkp_server
     build: .
     tty: true
     ports:
@@ -18,13 +18,13 @@ services:
     working_dir: /api
     # command: bash -c "poetry install && /bin/bash"
     networks:
-      - stamp_rally_backend
+      - hkp_backend
 
   db:
     image: mysql:8.0
     restart: always
-    container_name: stamp_rally_db
-    hostname: sr_db
+    container_name: hkp_db
+    hostname: hkp_db
     env_file:
       - mysql/.env
     ports:
@@ -39,8 +39,32 @@ services:
       - ./mysql/conf.d:/etc/mysql/conf.d:sensitive
     # command: ['mysqld', '--lower_case_table_names=0']
     networks:
-      - stamp_rally_backend
+      - hkp_backend
+
+  minio:
+    image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+    container_name: 'hkp-minio'
+    ports:
+      - ${MINIO_PORT:-9090}:9000
+    environment:
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=minio123
+    entrypoint: sh
+    command: |
+      -c "
+      mkdir -p /data/.minio.sys/buckets;
+      cp -r /policies/* /data/.minio.sys/;
+      cp -r /export/* /data/;
+      /usr/bin/minio server /data;
+      "
+    volumes:
+      - ./minio/data:/data
+      - ./minio/export:/export
+      - ./minio/config:/root/.minio
+      - ./minio/policies:/policies
+    networks:
+      - hkp_backend
 
 networks:
-  stamp_rally_backend:
+  hkp_backend:
     external: true

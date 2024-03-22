@@ -12,7 +12,7 @@ logger.name = __name__
 
 DB_URL = os.environ.get(
     "DB_URL",
-    "mysql+aiomysql://as:os@stamp_rally_db:3306/local_db?charset=utf8mb4"
+    "mysql+aiomysql://as:os@hkp_db:3306/local_db?charset=utf8mb4"
 )
 
 async_engine = create_async_engine(DB_URL, echo=True)

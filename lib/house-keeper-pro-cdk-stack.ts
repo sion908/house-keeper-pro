@@ -10,16 +10,27 @@ import * as path from "path";
 import * as yaml from "yaml";
 import { getConfig, ENVS } from "./env";
 
-interface StampRallyStackProps extends cdk.StackProps {
+interface HouseKeeperProStackProps extends cdk.StackProps {
   stageName:string;
 }
 
-export class StampRallyStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: StampRallyStackProps) {
+export class HouseKeeperProStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: HouseKeeperProStackProps) {
     super(scope, id, props);
     // deploy時の引数 or envファイル参照で行う
 
     const stageName = props?.stageName || ENVS.DEV;
+
+    const iamRoleForLambdaReader = new iam.Role(
+      this,
+      "iamRoleForLambdaReader",
+      {
+        assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+        managedPolicies: [
+          iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+        ],
+      },
+    );
 
     const signingProfile = new signer.SigningProfile(this, "SigningProfile", {
       platform: signer.Platform.AWS_LAMBDA_SHA384_ECDSA,
@@ -37,13 +48,13 @@ export class StampRallyStack extends cdk.Stack {
     const environment = getConfig(stageName);
 
     // レイヤー作成
-    const layer = new lambda.LayerVersion(this, `SRLayer-${stageName}`, {
+    const layer = new lambda.LayerVersion(this, `HKPLayer-${stageName}`, {
       code: lambda.Code.fromAsset("./api/python_modules/dependencies.zip"),
       compatibleRuntimes: [lambda.Runtime.PYTHON_3_10],
       description: "A layer to hold the FastAPI and Mangum dependencies",
     });
 
-    const lineFn = new lambda.Function(this, `SRLinehandler-${stageName}`, {
+    const lineFn = new lambda.Function(this, `HKPLinehandler-${stageName}`, {
       codeSigningConfig,
       runtime: lambda.Runtime.PYTHON_3_10,
       handler: "line_event.line_handler",
@@ -58,13 +69,14 @@ export class StampRallyStack extends cdk.Stack {
       timeout: cdk.Duration.seconds( 3 * 60 ),
       memorySize: 256,
       logRetention: stageName==ENVS.PROD? logs.RetentionDays.SIX_MONTHS : logs.RetentionDays.ONE_WEEK,
-      functionName: `SRLinehandler-${stageName}`
+      functionName: `HKPLinehandler-${stageName}`
     });
 
     // Lambda関数の作成
-    const fn = new lambda.Function(this, `SRhandler-${stageName}`, {
+    const fn = new lambda.Function(this, `HKPhandler-${stageName}`, {
       codeSigningConfig,
       runtime: lambda.Runtime.PYTHON_3_10,
+      role: iamRoleForLambdaReader,
       handler: "main.handler",
       code: lambda.Code.fromAsset(path.join(__dirname, "../api/src"),{
         exclude: ['alembic.ini', 'tests', 'database/migrations','__pycache__']
@@ -72,26 +84,14 @@ export class StampRallyStack extends cdk.Stack {
       layers: [layer], // レイヤーを設定
       environment: {
         ...environment,
-        SRLinehandlerName: lineFn.functionName,
+        // HKPLinehandlerName: lineFn.functionName,
         STAGE_NAME: stageName
       },
       timeout: cdk.Duration.seconds( 3 * 60 ),
       memorySize: 256,
       logRetention: stageName==ENVS.PROD? logs.RetentionDays.SIX_MONTHS : logs.RetentionDays.ONE_WEEK
     });
-
-    // 👇 create a policy statement
-    const InvokeFunctionPolicy = new iam.PolicyStatement({
-      actions: ['lambda:InvokeFunction'],
-      resources: ['*'],
-    });
-
-    // 👇 add the policy to the Function's role
-    fn.role?.attachInlinePolicy(
-      new iam.Policy(this, `Policy-SRhandler-${stageName}`, {
-        statements: [InvokeFunctionPolicy],
-      }),
-    );
+    fn.grantInvoke(lineFn);
 
     // SpecRestApiを使ったAPIGatewayの作成
     const swaggerYaml = yaml.parse(
@@ -109,18 +109,20 @@ export class StampRallyStack extends cdk.Stack {
       }
     }
 
-    const apigw = new apigateway.SpecRestApi(this, `SRRestApi-${stageName}`, {
+    const apigw = new apigateway.SpecRestApi(this, `HKPRestApi-${stageName}`, {
       apiDefinition: apigateway.ApiDefinition.fromInline(swaggerYaml),
       deployOptions: {
         stageName: stageName
       }
     });
 
-    fn.addPermission("SRLambdaPermisson", {
+    fn.addPermission("HKPLambdaPermisson", {
       principal: new iam.ServicePrincipal("apigateway.amazonaws.com"),
       action: "lambda:InvokeFunction",
       sourceArn: apigw.arnForExecuteApi(),
     });
 
+    const bucket = cdk.aws_s3.Bucket.fromBucketName(this, `HKP-s3`, "house-keeper-pro");
+    bucket.grantReadWrite(fn);
   }
 }

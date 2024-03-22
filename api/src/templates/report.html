@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% block title %}報告{% endblock %}
+{% block header_title %}報告{% endblock header_title %}
+{% block head %}
+  {{ super() }}
+  <title>Upload Images</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{% endblock %}
+{# comment %} {% if true %}{% block initliff %}
+<script>
+  window.onload=()=>{
+    const formElements = document.forms.reportForm;
+    formElements.lineToken.value="this.accessToken";
+    this.accessToken="this.accessToken";
+  }
+</script>
+{% endblock initliff %}{% endif %} {% endcomment #}
+{% block afinitliff %}
+  this.accessToken = liff.getAccessToken();
+  console.log(this.accessToken);
+  const formElements = document.forms.reportForm;
+  formElements.lineToken.value=this.accessToken;
+{% endblock %}
+{% block content %}
+  <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
+  <h1>{{ form.title }}</h1>
+  <p>{{ form.description }}</p>
+  <form  enctype="multipart/form-data" name="reportForm" id="reportForm">
+    <div class="form-group">
+      <label for="timeInputStart">Time:</label>
+      <input type="datetime-local" class="form-control" id="timeInputStart" name="timeInputStart" required>
+    </div>
+    {% for form_stub in form.form_stubs %}
+      {% with description=form_stub.description,name=form_stub.name,title=form_stub.title %}
+      {% include form_stub.template %}
+      {% endwith %}
+    {% endfor %}
+    <div class="form-group">
+      <label for="timeInputEnd">Time:</label>
+      <input type="datetime-local" class="form-control" id="timeInputEnd" name="timeInputEnd" required>
+    </div>
+    <input type="hidden" name="lineToken">
+    <input type='hidden' name='csrf-token' value="{{ csrf_token }}"/>
+    <button type="button" class="btn btn-primary" id="submitBtn">送信</button>
+  </form>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    function validateForm() {
+      var checkboxes = document.getElementsByClassName("required-checkbox");
+      var allChecked = true;
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        if (!checkboxes[i].checked) {
+          allChecked = false;
+          break;
+        }
+      }
+          // 画像入力フィールドのチェック
+      var imageInputs = document.getElementsByClassName("image-input");
+      var allImagesUploaded = true;
+
+      for (var i = 0; i < imageInputs.length; i++) {
+        if (imageInputs[i].files.length === 0) {
+          allImagesUploaded = false;
+          break;
+        }
+      }
+
+      if (!allChecked) {
+        alert("すべてのチェックボックスにチェックを入れてください。");
+        return false;
+      }
+      if (!allImagesUploaded) {
+        alert("すべての画像入力フィールドに画像を選択してください。");
+        return false;
+      }
+      return true;
+    }
+    $(document).ready(function() {
+      $('.image-input').change(function(e) {
+          var previewId = $(this).data('preview');
+          var reader = new FileReader();
+          reader.onload = function(event) {
+              $('#' + previewId).attr('src', event.target.result);
+              $('#' + previewId).show();
+          }
+          reader.readAsDataURL(e.target.files[0]);
+      });
+      // 現在の日時を取得
+      var currentDateTime = new Date().toISOString().slice(0, 16);
+      // datetimeInputの値を現在の日時に設定
+      $('#timeInputStart').val(currentDateTime);
+      $('#timeInputEnd').val(currentDateTime);
+      $('#submitBtn').on('click', function() {
+        // フォームデータを送信する
+        sendFormData();
+      });
+  });
+  // フォームデータを送信する関数
+  async function sendFormData() {
+    if (!validateForm()){
+      return
+    }
+    document.getElementById('overlay').style.display = 'block';
+    const formData = $('#reportForm').serializeArray().reduce((obj, item) => {
+      obj[item.name] = item.value;
+      return obj;
+    }, {});
+
+    try {
+      const response = await $.ajax({
+        url: window.location.href,
+        method: 'POST',
+        data: JSON.stringify(formData),
+        contentType: 'application/json'
+      });
+
+      if (response.success) {
+        const answerId = response.answerId;
+        await sendImagePairs(answerId);
+      } else {
+        console.error('フォームデータの送信に失敗しました');
+      }
+    } catch (error) {
+      console.error('エラー:', error);
+    } finally {
+      // オーバーレイを非表示
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementsByClassName("container")[0].innerHTML="<p>日報の入力が完了しました</p></br><p>おつかれさまでした</p>"
+    }
+  }
+
+// 画像ペアを1セットずつ送信する関数
+async function sendImagePairs(answerId) {
+  const imagePairInputs = $('.form-group-img');
+
+  for (const imagePairInput of imagePairInputs) {
+    const beforeInput = $(imagePairInput).find('input[name$="-be"]')[0];
+    const afterInput = $(imagePairInput).find('input[name$="-af"]')[0];
+
+    if (beforeInput.files.length > 0 && afterInput.files.length > 0) {
+      const formData = new FormData();
+      formData.append('lineToken', this.accessToken);
+      formData.append('beforeImage', beforeInput.files[0]);
+      formData.append('afterImage', afterInput.files[0]);
+
+      try {
+        const response = await $.ajax({
+          url: `${window.location.href.split("?")[0]}/answer/${answerId}/order/${beforeInput.name.split("-")[2]}`,
+          method: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false
+        });
+
+        if (!response.success) {
+          console.error('画像ペアの送信に失敗しました');
+          break;
+        }
+      } catch (error) {
+        console.error('エラー:', error);
+        break;
+      }
+    }
+  }
+}
+</script>
+{% endblock %}

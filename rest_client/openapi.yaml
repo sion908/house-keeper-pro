@@ -1,11 +1,13 @@
 openapi: 3.0.3
 info:
-  title: stamp-rally
-  description: stamp-rallyのAPI設計
+  title: house-keeper-pro
+  description: house-keeper-proのAPI設計
   version: 0.1.1
 servers:
 - url: http://127.0.0.1:3000
   description: local sam
+- url: http://127.0.0.1:80
+  description: local fastapi
 paths:
   /lineapi/callback:
     post:
@@ -30,36 +32,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /seal/:
+  /report/{form_id}:
     get:
-      tags:
-      - seal
-      summary: seal stamp disp
-      description: 'return seal dispray:
-
-
-        - **username**(str):
-
-        - **password**(str):
-
-        - **sex**(int): [男性:0,女性:1,その他2]
-
-        - **age**(int):'
-      operationId: sealStampDisp
+      summary: get report form
+      operationId: getReportForm
       parameters:
-      - name: place_id
-        in: query
+      - name: form_id
+        in: path
         required: true
         schema:
           type: integer
-          title: Place Id
+          title: フォームのID
       responses:
         '200':
           description: Successful Response
           content:
-            text/html:
-              schema:
-                type: string
+            application/json:
+              schema: {}
         '422':
           description: Validation Error
           content:
@@ -67,17 +56,62 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
-      tags:
-      - seal
-      summary: seal stamp post
-      description: Creates a new Post
-      operationId: sealStampPost
+      summary: create report form
+      operationId: createReportForm
+      parameters:
+      - name: form_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: フォームのID
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StampSealForm'
+              $ref: '#/components/schemas/AnswerBase'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /report/{form_id}/answer/{answer_id}/order/{stub_id}:
+    post:
+      summary: create report img
+      operationId: createReportImg
+      parameters:
+      - name: form_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: フォームのID
+      - name: answer_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: 回答フォームのID
+      - name: stub_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: 回答のID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/createReportImgRequest'
       responses:
         '200':
           description: Successful Response
@@ -92,6 +126,44 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    AnswerBase:
+      properties:
+        timeInputStart:
+          type: string
+          format: date-time
+          title: 業務開始時間
+        timeInputEnd:
+          type: string
+          format: date-time
+          title: 業務終了時間
+        lineToken:
+          type: string
+          title: lineのユーザートークン
+      type: object
+      required:
+      - timeInputStart
+      - timeInputEnd
+      - lineToken
+      title: AnswerBase
+    createReportImgRequest:
+      properties:
+        lineToken:
+          type: string
+          title: lineのユーザートークン
+        beforeImage:
+          type: string
+          format: binary
+          title: Beforeimage
+        afterImage:
+          type: string
+          format: binary
+          title: Afterimage
+      type: object
+      required:
+      - lineToken
+      - beforeImage
+      - afterImage
+      title: createReportImgRequest
     HTTPValidationError:
       properties:
         detail:
@@ -101,22 +173,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    StampSealForm:
-      properties:
-        lineToken:
-          type: string
-          title: Linetoken
-          description: liff用のToken
-        place_id:
-          type: integer
-          title: Place Id
-          description: スタンプを押した場所
-      type: object
-      required:
-      - lineToken
-      - place_id
-      title: StampSealForm
-      description: スタンプの押印処理時に受け取るpostのform的なもの
     ValidationError:
       properties:
         loc:

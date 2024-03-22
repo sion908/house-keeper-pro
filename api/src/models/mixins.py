@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from sqlalchemy import Column
-# from sqlalchemy.orm import relationship  # noqa:E800
 from sqlalchemy.sql.sqltypes import DateTime
 
 

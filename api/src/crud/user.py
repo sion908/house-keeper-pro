@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from models import Card, Stamp, User
+from models import User
 from schemas.user import UserCreate
 
 
@@ -15,7 +15,7 @@ async def get_by_pk(
 ) -> AsyncIterator[User]:
     user = await db.scalar(
         select(User).where(User.id == user_id).limit(1)
-    ).scalar_one()
+    )
 
     return user
 
@@ -27,32 +27,6 @@ async def get_by_lineUserID(
     user = await db.scalar(
         select(User).where(User.lineUserID == lineUserID).limit(1)
     )
-
-    return user
-
-
-async def get_with_card(
-    db: AsyncSession,
-    lineUserID: str = None,
-    id: int = None
-) -> AsyncIterator[User] | None:
-    stmt = select(User)
-    if lineUserID:
-        stmt = stmt.where(User.lineUserID == lineUserID)
-    elif id:
-        stmt = stmt.where(User.id == id)
-    user = await db.scalar(
-        stmt
-            .options(
-                joinedload(User.card),
-                joinedload(User.card).joinedload(Card.stamps),
-                joinedload(User.card).joinedload(Card.stamps).joinedload(Stamp.place)
-            )
-            .limit(1)
-    )
-    if user and user.card and user.card.stamps:
-        # Stamp を Place.id でソートし、Place の id と name のみを抽出
-        user.card.stamps.sort(key=lambda stamp: stamp.place.id)
 
     return user
 

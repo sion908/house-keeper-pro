@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-import uuid
-from enum import IntEnum
-from typing import Union
-
-from sqlalchemy import select
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, VARCHAR
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,8 +22,8 @@ class User(Base, TimeStampMixin):
     lineUserID: Mapped[str] = mapped_column(VARCHAR(40), unique=True)
     username: Mapped[str] = mapped_column(VARCHAR(48), nullable=True)
     is_active: Mapped[bool] = mapped_column(BOOLEAN, default=True, nullable=False)
-    card = relationship("Card", backref="owner", uselist=False)
     admin = relationship("Admin", backref="user")
+    answers = relationship("Answer", backref="user")
 
     def convert_output(self):
         self.id = str(self.id)

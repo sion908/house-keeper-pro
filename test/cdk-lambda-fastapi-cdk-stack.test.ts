@@ -1,18 +1,18 @@
 import { Template } from "aws-cdk-lib/assertions";
 import * as cdk from "aws-cdk-lib";
-import { StampRallyStack } from "../lib/stamp-rally-cdk-stack";
+import { HouseKeeperProStack } from "../lib/house-keeper-pro-cdk-stack";
 
-describe("stampRallyStack", () => {
+describe("houseKeeperProStack", () => {
   test("synthesizes the way we expect", () => {
     const app = new cdk.App();
 
     // Create the ProcessorStack.
-    const stampRallyStack = new StampRallyStack(app, "stampRallyStack", {
+    const houseKeeperProStack = new HouseKeeperProStack(app, "houseKeeperProStack", {
       stageName: 'dev'
     });
 
     // Prepare the stack for assertions.
-    const template = Template.fromStack(stampRallyStack);
+    const template = Template.fromStack(houseKeeperProStack);
 
     // Assert it creates the function with the correct properties...
     template.hasResourceProperties("AWS::Lambda::Function", {

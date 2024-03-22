@@ -16,7 +16,7 @@
     "cdk:local": "cdk -c environment=local",
     "deploy:dev": "npm run cdk:dev deploy",
     "synth:local": "npm run cdk:local synth",
-    "invoke": "npm run synth:local && sam local start-api -t ./cdk.out/StampRallyStack-local.template.json --docker-network stamp_rally_backend",
+    "invoke": "npm run synth:local && sam local start-api -t ./cdk.out/HouseKeeperProStack-local.template.json --docker-network house_keeper_pro_backend",
     "invoke:ins": "./run.sh doc ins && npm run invoke",
     "fastapi": "./run.sh doc fastapi"
   },

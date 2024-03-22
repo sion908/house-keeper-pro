@@ -2,6 +2,7 @@
 
 # AWSプロファイルの読み込み
 source .env
+source api/docker/.env
 
 if [ $# = 0 ]; then
 
@@ -70,8 +71,8 @@ elif [[ $1 =~ se(rver)? ]]; then
 elif [ $1 = "db" ]; then
     echo -e "- local      : local_db\n- local_test : local_test_db\n"
     if command -v mysql &> /dev/null; then
-        echo 'mysql -u root -h 127.0.0.1 --port 33306 -t local_db -p'
-        mysql -u root -h 127.0.0.1 --port 53306 -t local_db -p
+        echo mysql -u root -h 127.0.0.1 --port $DB_PORT -t local_db -p
+        mysql -u root -h 127.0.0.1 --port $DB_PORT -t local_db -p
     else
         echo "docker-compose exec db bash"
         echo " -> mysql -u root -p"
@@ -91,7 +92,7 @@ elif [[ $1 =~ in(voke)? ]]; then
     npm run cdk:local synth
 
     echo sam local start-api
-    sam local start-api -t ./cdk.out/StampRallyStack-dev.template.json --docker-network stamp_rally_backend
+    sam local start-api -t ./cdk.out/houseKeeperProStack-dev.template.json --docker-network house_keeper_pro_backend
 elif [[ $1 =~ mi(grate)? ]]; then
     if [ $# -eq 2 ]; then
         echo npm run env -- -e $2

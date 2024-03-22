@@ -4,7 +4,7 @@ from .variable import (
     DEBUG,
     LINE_ACCESS_SECRET,
     STAGE_NAME,
-    SRLinehandlerName,
+    HKPLinehandlerName,
     Tags,
     logger,
     logging,

@@ -43,12 +43,16 @@ def add_custom_openapi(app: FastAPI) -> None:
                 "url": "http://127.0.0.1:3000",
                 "description": "local sam"
             },
+            {
+                "url": "http://127.0.0.1:80",
+                "description": "local fastapi"
+            },
         ]
         openapi_schema = get_openapi(
-            title="stamp-rally",
+            title="house-keeper-pro",
             version="0.1.1",
             openapi_version="3.0.3",
-            description="stamp-rallyのAPI設計",
+            description="house-keeper-proのAPI設計",
             tags=tags_metadata,
             routes=app.routes,
             servers=servers
