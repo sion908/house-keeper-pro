@@ -92,7 +92,7 @@ elif [[ $1 =~ in(voke)? ]]; then
     npm run cdk:local synth
 
     echo sam local start-api
-    sam local start-api -t ./cdk.out/houseKeeperProStack-dev.template.json --docker-network house_keeper_pro_backend
+    sam local start-api -t ./cdk.out/houseKeeperProStack-local.template.json --docker-network house_keeper_pro_backend
 elif [[ $1 =~ mi(grate)? ]]; then
     if [ $# -eq 2 ]; then
         echo npm run env -- -e $2
