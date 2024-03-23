@@ -42,10 +42,10 @@ async def get_report_form(
     csrf_protect: CsrfProtect = Depends()
 ):
     sec_fetch_dest: Optional[str] = request.headers.get("Sec-Fetch-Dest")
-
     if sec_fetch_dest == "image":
         # 画像リソースの取得リクエストの場合
         return {}
+
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     form = await get_by_pk(db=db, form_id=form_id)
     context = {

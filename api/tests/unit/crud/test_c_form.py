@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from crud.form import get_by_pk
-from models import Form, FormStub
+from models import Form, FormStub, StubType
 
 
 @pytest.mark.asyncio()
@@ -18,21 +18,30 @@ class TestGetById:
             async_db: AsyncSession,
             create_form_with_another: 'function',
         ) -> None:
-        form_stub_attrs = [{
-            "description": f"説明-{i}",
-            "order": i+1,
-            "type": i%2
-        } for i in range(3)]
+        form_setting = {
+            "施設1": {
+                "1階": {
+                    "洗面所": {
+                        "鏡": StubType.IMG
+                    }
+                },
+                "2階": {
+                    "キッチン": {
+                        "床": StubType.CHECKBOX,
+                        "扉": StubType.CHECKBOX
+                    },
+                    "リビング": {
+                        "床": StubType.CHECKBOX,
+                        "鏡": StubType.IMG,
+                        "扉": StubType.CHECKBOX
+                    }
+                },
+            }
+        }
 
-        init_form = await create_form_with_another(form_stub_attrs)
+        await create_form_with_another(form_setting)
 
-        form = await get_by_pk(db=async_db, form=init_form)
+        form = await get_by_pk(db=async_db, form_id=1)
         breakpoint()
         assert type(form) == Form
-        assert len(form.form_stubs) == 3
-        for i, form_stub_attr in enumerate(form_stub_attrs):
-            assert type(form.form_stubs[i]) == FormStub
-            assert form.form_stubs[i].form_id == form.id
-            assert form.form_stubs[i].description == form_stub_attr["description"]
-            assert form.form_stubs[i].order == form_stub_attr["order"]
-            assert form.form_stubs[i].type == form_stub_attr["type"]
+        assert len(form.class_floors) == len(form_setting["施設1"].keys())

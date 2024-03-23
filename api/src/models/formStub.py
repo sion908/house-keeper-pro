@@ -26,18 +26,18 @@ class FormStub(Base, TimeStampMixin):
             {**args, 'comment': '画像用のフォームの一部'},
         )
 
-    id: Mapped[int] = mapped_column(TINYINT(unsigned=True), primary_key=True)
-    description: Mapped[str] = mapped_column(TEXT, comment='説明', nullable=True)
+    id: Mapped[int] = mapped_column(SMALLINT(unsigned=True), primary_key=True)
     title: Mapped[str] = mapped_column(VARCHAR(255), comment='タイトル', nullable=True)
-    order: Mapped[int] = mapped_column(SMALLINT(unsigned=True), comment='formの順番')
+    description: Mapped[str] = mapped_column(TEXT, comment='説明', nullable=True)
+    order: Mapped[int] = mapped_column(TINYINT(unsigned=True), comment='formの順番')
     type: Mapped[int] = mapped_column(
         ChoiceType(StubType, impl=TINYINT(unsigned=True)),
         default=StubType.IMG,
         comment='formの種類'
     )
-    form_id: Mapped[int] = mapped_column(
+    form_class_area_id: Mapped[int] = mapped_column(
         TINYINT(unsigned=True),
-        ForeignKey('form.id'),
+        ForeignKey('formclassarea.id'),
         nullable=True
     )
 

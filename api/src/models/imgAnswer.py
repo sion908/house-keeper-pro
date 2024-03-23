@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.dialects.mysql import SMALLINT, TINYINT, VARCHAR
+from sqlalchemy.dialects.mysql import SMALLINT, VARCHAR
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,7 +23,7 @@ class ImgAnswer(Base, CreatedAtMixin):
     key_be: Mapped[str] = mapped_column(VARCHAR(128))
     key_af: Mapped[str] = mapped_column(VARCHAR(128))
     form_stub_id: Mapped[int] = mapped_column(
-        TINYINT(unsigned=True),
+        SMALLINT(unsigned=True),
         ForeignKey('formstub.id')
     )
     answer_id: Mapped[int] = mapped_column(

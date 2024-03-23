@@ -1,7 +1,7 @@
 import asyncio
 
 import pytest
-from typing import Generator
+from typing import Dict, List
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -158,24 +158,58 @@ async def create_user(async_db: AsyncSession):
 
 @pytest.fixture()
 async def create_form_with_another(async_db: AsyncSession):
-    async def _create_card_with_another(form_stub_attrs):
-        form = Form(
-            title="title",
-            description="description"
+    async def _create_form_with_another(form_setting: Dict[str, Dict[str, Dict[str, List[str]]]]):
+        form_attrs, form_class_floor_attrs, form_class_area_attrs, form_stub_attrs = [], [], [], []
+        for facility_index, (facility, form_class_floor_setting) in enumerate(form_setting.items(), start=1):
+            for class_floor_index, (class_floor, form_class_area_setting) in enumerate(form_class_floor_setting.items(), start=1):
+                for class_area_index, (class_area, form_stub_setting) in enumerate(form_class_area_setting.items(), start=1):
+                    for form_stub_index, (form_stub, form_stub_type) in enumerate(form_stub_setting.items(), start=1):
+                        form_stub_attrs.append({
+                            "description": f"{form_stub}-description",
+                            "title": f"{form_stub}-title",
+                            "order": form_stub_index,
+                            "type": form_stub_type,
+                            "form_class_area_id": class_area_index
+                        })
+                    form_class_area_attrs.append({
+                        "id": class_area_index,
+                        "description": f"{class_area}-description",
+                        "title": f"{class_area}-title",
+                        "order": class_area_index,
+                        "form_class_floor_id": class_floor_index
+                    })
+                form_class_floor_attrs.append({
+                    "id": class_floor_index,
+                    "description": f"{class_floor}-description",
+                    "title": f"{class_floor}-title",
+                    "order": class_floor_index,
+                    "form_id": facility_index
+                })
+            form_attrs.append({
+                "id": facility_index,
+                "title": f"{facility}-title",
+                "description": f"{facility}-description"
+            })
+
+        await async_db.execute(
+            Form.__table__.insert(),
+            form_attrs
         )
-
-        async_db.add(form)
-
-        await async_db.commit()
-        await async_db.refresh(form)
-        for i in range(len(form_stub_attrs)):
-            form_stub_attrs[i]["form_id"] = form.id
-
+        await async_db.execute(
+            FormClassFloor.__table__.insert(),
+            form_class_floor_attrs
+        )
+        await async_db.execute(
+            FormClassArea.__table__.insert(),
+            form_class_area_attrs
+        )
         await async_db.execute(
             FormStub.__table__.insert(),
             form_stub_attrs
         )
-        await async_db.commit()
-        return form
 
-    yield _create_card_with_another
+
+        await async_db.commit()
+        await async_db.refresh()
+
+    yield _create_form_with_another

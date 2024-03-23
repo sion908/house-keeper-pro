@@ -21,10 +21,24 @@
       <label for="timeInputStart">Time:</label>
       <input type="datetime-local" class="form-control" id="timeInputStart" name="timeInputStart" required>
     </div>
-    {% for form_stub in form.form_stubs %}
-      {% with description=form_stub.description,name=form_stub.name,title=form_stub.title %}
-      {% include form_stub.template %}
-      {% endwith %}
+    {% for class_floor in form.class_floors %}
+      <div class="form-container">
+      <p class="floor-title">{{ class_floor.title }}</p>
+      <p class="floor-description">{{ class_floor.description }}</p>
+      {% for class_area in class_floor.class_areas %}
+        <div class="form-container">
+        <p class="area-title">{{ class_area.title }}</p>
+        <p class="area-description">{{ class_area.description }}</p>
+        {% for form_stub in class_area.form_stubs %}
+          <div class="form-container">
+          {% with description=form_stub.description,name=form_stub.name,title=form_stub.title %}
+          {% include form_stub.template %}
+          {% endwith %}
+          </div>
+        {% endfor %}
+        </div>
+      {% endfor %}
+      </div>
     {% endfor %}
     <div class="form-group">
       <label for="timeInputEnd">Time:</label>

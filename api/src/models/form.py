@@ -22,4 +22,4 @@ class Form(Base, TimeStampMixin):
     title: Mapped[str] = mapped_column(TEXT,comment="タイトル")
     description: Mapped[str] = mapped_column(TEXT,comment="説明")
 
-    form_stubs = relationship("FormStub", backref="form")
+    class_floors = relationship("FormClassFloor", backref="form")
