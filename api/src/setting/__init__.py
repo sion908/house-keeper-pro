@@ -1,11 +1,2 @@
 # flake8: noqa: F401
-from .variable import (
-    CHANNEL_ACCESS_TOKEN,
-    DEBUG,
-    LINE_ACCESS_SECRET,
-    STAGE_NAME,
-    HKPLinehandlerName,
-    Tags,
-    logger,
-    logging,
-)
+from .variable import DEBUG, HKPLinehandlerName, Tags, csrf_settings, is_local, line_settings, logger

@@ -6,15 +6,6 @@
   <title>Upload Images</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 {% endblock %}
-{# comment %} {% if true %}{% block initliff %}
-<script>
-  window.onload=()=>{
-    const formElements = document.forms.reportForm;
-    formElements.lineToken.value="this.accessToken";
-    this.accessToken="this.accessToken";
-  }
-</script>
-{% endblock initliff %}{% endif %} {% endcomment #}
 {% block afinitliff %}
   this.accessToken = liff.getAccessToken();
   console.log(this.accessToken);
@@ -39,8 +30,7 @@
       <label for="timeInputEnd">Time:</label>
       <input type="datetime-local" class="form-control" id="timeInputEnd" name="timeInputEnd" required>
     </div>
-    <input type="hidden" name="lineToken">
-    <input type='hidden' name='csrf-token' value="{{ csrf_token }}"/>
+    <input type="hidden" name="lineToken" value="default_lineToken"/>
     <button type="button" class="btn btn-primary" id="submitBtn">送信</button>
   </form>
   </div>
@@ -49,6 +39,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
+  this.csrfToken="{{ csrf_token }}"
     function validateForm() {
       var checkboxes = document.getElementsByClassName("required-checkbox");
       var allChecked = true;
@@ -116,26 +107,33 @@
         url: window.location.href,
         method: 'POST',
         data: JSON.stringify(formData),
-        contentType: 'application/json'
+        contentType: 'application/json',
+        headers: {
+          'X-CSRF-Token': this.csrfToken // CSRFトークンをヘッダーに追加
+        }
       });
 
       if (response.success) {
         const answerId = response.answerId;
-        await sendImagePairs(answerId);
+        const lineToken = formData.lineToken;
+        await sendImagePairs(answerId, lineToken);
       } else {
         console.error('フォームデータの送信に失敗しました');
       }
     } catch (error) {
       console.error('エラー:', error);
+      document.getElementById('overlay').style.display = 'none';
+      alert("投稿に失敗しました．もう一度お試しください．");
+      throw error
     } finally {
       // オーバーレイを非表示
       document.getElementById('overlay').style.display = 'none';
-      document.getElementsByClassName("container")[0].innerHTML="<p>日報の入力が完了しました</p></br><p>おつかれさまでした</p>"
+      // document.getElementsByClassName("container")[0].innerHTML="<p>日報の入力が完了しました</p></br><p>おつかれさまでした</p>"
     }
   }
 
 // 画像ペアを1セットずつ送信する関数
-async function sendImagePairs(answerId) {
+async function sendImagePairs(answerId, lineToken) {
   const imagePairInputs = $('.form-group-img');
 
   for (const imagePairInput of imagePairInputs) {
@@ -144,17 +142,20 @@ async function sendImagePairs(answerId) {
 
     if (beforeInput.files.length > 0 && afterInput.files.length > 0) {
       const formData = new FormData();
-      formData.append('lineToken', this.accessToken);
+      formData.append('lineToken', lineToken);
       formData.append('beforeImage', beforeInput.files[0]);
       formData.append('afterImage', afterInput.files[0]);
 
       try {
         const response = await $.ajax({
-          url: `${window.location.href.split("?")[0]}/answer/${answerId}/order/${beforeInput.name.split("-")[2]}`,
+          url: `${window.location.href.split("?")[0]}answer/${answerId}/order/${beforeInput.name.split("-")[2]}`,
           method: 'POST',
           data: formData,
           processData: false,
-          contentType: false
+          contentType: false,
+          headers: {
+            'X-CSRF-Token': this.csrfToken // CSRFトークンをヘッダーに追加
+          }
         });
 
         if (!response.success) {

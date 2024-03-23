@@ -3,7 +3,9 @@ from mangum import Mangum
 
 from exception import add_exception_handlers
 from routers import line, report
-from setting import DEBUG
+from setting import DEBUG, Tags, logger
+
+logger.name = __name__
 
 app = FastAPI(debug=DEBUG)
 
@@ -15,6 +17,7 @@ app.include_router(
 app.include_router(
     report.router,
     prefix="/report",
+    tags=[Tags.report]
 )
 
 add_exception_handlers(app)
@@ -22,8 +25,6 @@ add_exception_handlers(app)
 handler = Mangum(app)
 
 if DEBUG:
-    import logging
-
     from fastapi import FastAPI, Request, Response
     from starlette.background import BackgroundTask
     from starlette.types import Message
@@ -38,9 +39,7 @@ if DEBUG:
         request._receive = receive
 
     def log_info(res_body):
-        # logging.basicConfig(level=logging.DEBUG)
         # logging.info(f"res_body: {res_body}")
-        logging.basicConfig(level=logging.DEBUG)
 
         # レスポンスボディがBlobファイルかどうかを判定する関数
         def is_blob(body):
@@ -56,13 +55,13 @@ if DEBUG:
             # logging.info(f"Response contains a binary file: {filename}")
             res_body = b"[Binary data]"
 
-        logging.info(f"res_body: {res_body.decode('utf-8')}")
+        logger.info(f"res_body: {res_body.decode('utf-8')}")
 
     @app.middleware('http')
     async def some_middleware(request: Request, call_next):
         req_body = await request.body()
         await set_body(request, req_body)
-        logging.info(f"req_body: {req_body}")
+        logger.info(f"req_body: {req_body}")
         response = await call_next(request)
 
         res_body = b''

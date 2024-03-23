@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import File, Form, UploadFile
+from fastapi import File, Form, Path, UploadFile
 from pydantic import BaseModel, Field, validator
 
 from dependencies import get_lineuser_by_token
@@ -31,6 +31,11 @@ class AnswerBase(BaseModel):
 class ImagePair(BaseModel):
     beforeImage: UploadFile = File(...)
     afterImage: UploadFile = File(...)
+    # lineToken: str = Form(..., title="lineのユーザートークン")
+    # form_id: int = Path(title="フォームのID")
+    # answer_id: int = Path(title="回答フォームのID")
+    # stub_id: int = Path(title="回答のID")
 
     class Config:
+        # from_attributes = True
         arbitrary_types_allowed = True

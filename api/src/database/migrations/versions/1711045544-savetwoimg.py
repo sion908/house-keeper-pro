@@ -7,8 +7,8 @@ Create Date: 2024-03-22 03:25:44.047758+09:00
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import mysql
 from sqlalchemy_utils.types import PasswordType
 

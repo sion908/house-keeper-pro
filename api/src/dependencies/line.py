@@ -29,11 +29,11 @@ from crud.user import create as create_user
 from crud.user import get_by_lineUserID, update_username
 from models import User
 from schemas.user import UserCreate
-from setting import CHANNEL_ACCESS_TOKEN, LINE_ACCESS_SECRET, STAGE_NAME, HKPLinehandlerName, logger
+from setting import HKPLinehandlerName, is_local, line_settings, logger
 
 logger.name = __name__
 
-line_bot_api = LineBotApi(channel_access_token=CHANNEL_ACCESS_TOKEN)
+line_bot_api = LineBotApi(channel_access_token=line_settings.CHANNEL_ACCESS_TOKEN)
 
 
 async def get_lineuser_by_token(db:AsyncSession, token, create=False) -> list[User, bool]:
@@ -46,7 +46,7 @@ async def get_lineuser_by_token(db:AsyncSession, token, create=False) -> list[Us
         tokenからユーザーIDが取れる場合はとにかくUserを 作る
     """
 
-    if STAGE_NAME=="local":
+    if is_local:
         from crud.user import get_by_pk as get_user_by_pk
         user = await get_user_by_pk(db=db,user_id=1)
         return [user, None]
@@ -183,4 +183,4 @@ class MyWebhookHandler(WebhookHandler):
                 await func()
 
 
-handler = MyWebhookHandler(channel_secret=LINE_ACCESS_SECRET)
+handler = MyWebhookHandler(channel_secret=line_settings.LINE_ACCESS_SECRET)

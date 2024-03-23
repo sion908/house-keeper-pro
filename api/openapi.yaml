@@ -34,6 +34,8 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /report/:
     get:
+      tags:
+      - report
       summary: get report init
       operationId: getReportInit
       responses:
@@ -44,6 +46,8 @@ paths:
               schema: {}
   /report/{form_id}/:
     get:
+      tags:
+      - report
       summary: get report form
       operationId: getReportForm
       parameters:
@@ -66,6 +70,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
     post:
+      tags:
+      - report
       summary: create report form
       operationId: createReportForm
       parameters:
@@ -95,14 +101,35 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
   /report/{form_id}/answer/{answer_id}/order/{stub_id}:
     post:
+      tags:
+      - report
       summary: create report img
       operationId: createReportImg
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ImagePair'
+      parameters:
+      - name: form_id
+        in: path
         required: true
+        schema:
+          type: integer
+          title: フォームのID
+      - name: answer_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: 回答フォームのID
+      - name: stub_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: 回答のID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_create_report_img_report__form_id__answer__answer_id__order__stub_id__post'
       responses:
         '200':
           description: Successful Response
@@ -136,6 +163,25 @@ components:
       - timeInputEnd
       - lineToken
       title: AnswerBase
+    Body_create_report_img_report__form_id__answer__answer_id__order__stub_id__post:
+      properties:
+        lineToken:
+          type: string
+          title: lineのユーザートークン
+        beforeImage:
+          type: string
+          format: binary
+          title: Beforeimage
+        afterImage:
+          type: string
+          format: binary
+          title: Afterimage
+      type: object
+      required:
+      - lineToken
+      - beforeImage
+      - afterImage
+      title: Body_create_report_img_report__form_id__answer__answer_id__order__stub_id__post
     HTTPValidationError:
       properties:
         detail:
@@ -145,37 +191,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    ImagePair:
-      properties:
-        beforeImage:
-          type: string
-          format: binary
-          title: Beforeimage
-        afterImage:
-          type: string
-          format: binary
-          title: Afterimage
-        lineToken:
-          type: string
-          title: lineのユーザートークン
-        form_id:
-          type: integer
-          title: フォームのID
-        answer_id:
-          type: integer
-          title: 回答フォームのID
-        stub_id:
-          type: integer
-          title: 回答のID
-      type: object
-      required:
-      - beforeImage
-      - afterImage
-      - lineToken
-      - form_id
-      - answer_id
-      - stub_id
-      title: ImagePair
     ValidationError:
       properties:
         loc:
@@ -200,5 +215,5 @@ components:
 tags:
 - name: user
   description: ユーザーに関するAPI
-- name: seal
-  description: スタンプを押す用のAPIとか
+- name: report
+  description: レポート提出関連

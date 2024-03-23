@@ -79,7 +79,7 @@ export class HouseKeeperProStack extends cdk.Stack {
       role: iamRoleForLambdaReader,
       handler: "main.handler",
       code: lambda.Code.fromAsset(path.join(__dirname, "../api/src"),{
-        exclude: ['alembic.ini', 'tests', 'database/migrations','__pycache__']
+        exclude: ['alembic.ini', 'tests', 'database/migrations','__pycache__', ".gitignore",".gitkeep"]
       }),
       layers: [layer], // レイヤーを設定
       environment: {

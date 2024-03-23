@@ -10,8 +10,8 @@ tags_metadata = [
         "description": "ユーザーに関するAPI",
     },
     {
-        "name": Tags.seal,
-        "description": "スタンプを押す用のAPIとか",
+        "name": Tags.report,
+        "description": "レポート提出関連",
     },
 ]
 
@@ -45,7 +45,7 @@ def add_custom_openapi(app: FastAPI) -> None:
             },
             {
                 "url": "http://127.0.0.1:80",
-                "description": "local fastapi"
+                "description": "docker fastapi"
             },
         ]
         openapi_schema = get_openapi(
@@ -57,6 +57,7 @@ def add_custom_openapi(app: FastAPI) -> None:
             routes=app.routes,
             servers=servers
         )
+        app.response_model_exclude_unset = True
         app.openapi_schema = openapi_schema
         return app.openapi_schema
 

@@ -6,13 +6,21 @@
     <title>{% block title %}{% endblock %}</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     {% block initliff %}
-    <script>window.onload=()=>{
-    liff.init({liffId:'{{ liff_id }}',withLoginOnExternalBrowser:true})
-        .then(()=>{
-            if(!liff.isLoggedIn()){liff.login();}
-    {% block afinitliff %}{% endblock afinitliff %}
-    self.liff=liff;
-    })}</script>
+    <script>
+      const liff_init=()=>{
+        liff.init({liffId:'{{ liff_id }}',withLoginOnExternalBrowser:true})
+            .then(()=>{
+                if(!liff.isLoggedIn()){liff.login();}
+              {% block afinitliff %}{% endblock afinitliff %}
+              self.liff=liff;
+            })
+      }
+      window.onload=()=>{
+        {% if not is_local %}
+          liff_init();
+        {% endif %}
+      }
+    </script>
     {% endblock initliff %}
     {% endblock head %}
 </head>

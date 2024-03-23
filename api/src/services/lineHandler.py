@@ -1,13 +1,6 @@
 import json
 
-from linebot.models import (
-    FollowEvent,
-    MessageEvent,
-    PostbackEvent,
-    TextMessage,
-    TextSendMessage,
-    UnfollowEvent,
-)
+from linebot.models import FollowEvent, MessageEvent, PostbackEvent, TextMessage, TextSendMessage, UnfollowEvent
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from crud.user import upsert as upsert_user

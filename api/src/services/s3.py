@@ -1,15 +1,30 @@
 import boto3
+from boto3.session import Session as s3_session
 from fastapi import UploadFile
 
-from setting.variable import STAGE_NAME, s3
+from setting import is_local
 
 
-def upload_file(filekey: str,file: UploadFile):
-    # ファイルキーの生成ロジック
-    if file is None:
-        return None
-    # S3にファイルをアップロード
-    bucket_name="upload" if STAGE_NAME=="local" else "house-keeper-pro"
-    s3.put_object(Bucket=bucket_name, Key=filekey, Body=file)
+class S3():
 
-    return filekey
+    def __init__(self):
+        s3_attrs = {
+            "endpoint_url": "http://minio:9000",
+            "aws_access_key_id": "minio",
+            "aws_secret_access_key": "minio123"
+        } if is_local else {}
+
+        self.s3: s3_session = boto3.client(
+            "s3",
+            **s3_attrs
+        )
+
+    def upload_file(self, filekey: str, file: UploadFile):
+        # ファイルキーの生成ロジック
+        if file is None:
+            return None
+        # S3にファイルをアップロード
+        bucket_name="upload" if is_local else "house-keeper-pro"
+        self.s3.put_object(Bucket=bucket_name, Key=filekey, Body=file)
+
+        return filekey

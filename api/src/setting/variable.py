@@ -1,45 +1,70 @@
-import logging
 import os
 from enum import Enum
+from functools import lru_cache
+from logging import RootLogger
 
-import boto3
+from pydantic import ValidationError
+from pydantic_settings import BaseSettings
+
+from .log import log_setting
 
 
 class Tags(str, Enum):
     # https://fastapi.tiangolo.com/tutorial/metadata/#use-your-tags
     user = "user"
-    seal = "seal"
+    report = "report"
 
 
-DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
+class LineSettings(BaseSettings):
+    CHANNEL_ACCESS_TOKEN: str = os.environ.get("CHANNEL_ACCESS_TOKEN")
+    LINE_ACCESS_SECRET: str = os.environ.get("LINE_ACCESS_SECRET")
 
-CHANNEL_ACCESS_TOKEN = os.environ.get("CHANNEL_ACCESS_TOKEN")
-LINE_ACCESS_SECRET = os.environ.get("LINE_ACCESS_SECRET")
 
-STAGE_NAME = os.environ.get("STAGE_NAME")
+class CsrfSettings(BaseSettings):
+    CSRF_SECRET_KEY: str = os.environ.get("CSRF_SECRET_KEY")
 
-HKPLinehandlerName = f"HKPLinehandler-${STAGE_NAME}"
 
-logging.getLogger().setLevel(level=logging.INFO if DEBUG else logging.WARNING)
+@lru_cache
+def load_settings() -> (
+    tuple[
+        bool,
+        LineSettings,
+        CsrfSettings,
+        bool,
+        RootLogger,
+        str
+    ]
+):
+    try:
+        DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
+        line_settings: LineSettings = LineSettings()
+        csrf_settings: CsrfSettings = CsrfSettings()
 
-loggin_format = "%(levelname)-9s  %(asctime)s [%(filename)s:%(lineno)d] %(message)s"
+        STAGE_NAME = os.environ.get("STAGE_NAME")
+        is_local = (STAGE_NAME == "local")
+        custom_logger = log_setting(stage=STAGE_NAME)
+        HKPLinehandlerName = os.environ.get("HKP_LINEHANDLER_NAME")  # noqa: N806
+        pass
+    except ValidationError as e:
+        import logging
+        logging.error("Could not load settings: ", e)
+        raise
 
-st_handler = logging.StreamHandler()
-# StreamHandlerによる出力フォーマットを先で定義した'format'に設定
-st_handler.setFormatter(logging.Formatter(loggin_format))
-logger = logging.getLogger("housekeeperpro")
-logger.addHandler(st_handler)
+    return (
+        DEBUG,
+        line_settings,
+        csrf_settings,
+        is_local,
+        custom_logger,
+        HKPLinehandlerName
+    )
 
-num_descriptions=2
-num_imgs=2
 
-s3_attrs = {
-    "endpoint_url": "http://minio:9000",
-    "aws_access_key_id": "minio",
-    "aws_secret_access_key": "minio123"
-} if STAGE_NAME=="local" else {}
-
-s3 = boto3.client(
-    "s3",
-    **s3_attrs
-)
+(
+    DEBUG,
+    line_settings,
+    csrf_settings,
+    is_local,
+    logger,
+    HKPLinehandlerName
+) = load_settings()

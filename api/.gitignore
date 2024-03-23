@@ -181,3 +181,6 @@ cython_debug/
 
 # mysqlのデータ永続用
 docker/mysql/mysql_data
+
+src/setting/google_access_key/*
+!src/setting/google_access_key/.gitkeep
