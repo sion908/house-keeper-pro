@@ -3,6 +3,7 @@
 {% block header_title %}報告{% endblock header_title %}
 {% block head %}
   {{ super() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Upload Images</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 {% endblock %}
@@ -17,20 +18,20 @@
   <h1>{{ form.title }}</h1>
   <p>{{ form.description }}</p>
   <form  enctype="multipart/form-data" name="reportForm" id="reportForm">
-    <div class="form-group">
-      <label for="timeInputStart">Time:</label>
+    <div class="form-group input-date">
+      <label for="timeInputStart">日時:</label>
       <input type="datetime-local" class="form-control" id="timeInputStart" name="timeInputStart" required>
     </div>
     {% for class_floor in form.class_floors %}
       <div class="form-container">
-      <p class="floor-title">{{ class_floor.title }}</p>
+      <p class="floor-title">【{{ class_floor.title }}】</p>
       <p class="floor-description">{{ class_floor.description }}</p>
       {% for class_area in class_floor.class_areas %}
         <div class="form-container">
         <p class="area-title">{{ class_area.title }}</p>
         <p class="area-description">{{ class_area.description }}</p>
         {% for form_stub in class_area.form_stubs %}
-          <div class="form-container">
+          <div>
           {% with description=form_stub.description,name=form_stub.name,title=form_stub.title %}
           {% include form_stub.template %}
           {% endwith %}
@@ -40,12 +41,13 @@
       {% endfor %}
       </div>
     {% endfor %}
-    <div class="form-group">
-      <label for="timeInputEnd">Time:</label>
+    <div class="form-group input-date">
+      <label for="timeInputEnd">日時</label>
       <input type="datetime-local" class="form-control" id="timeInputEnd" name="timeInputEnd" required>
     </div>
     <input type="hidden" name="lineToken" value="default_lineToken"/>
-    <button type="button" class="btn btn-primary" id="submitBtn">送信</button>
+    <!-- <button type="button" class="btn btn-primary" id="submitBtn">送信</button> -->
+    <button type="button" class="send-btn" id="submitBtn">送信する</button>
   </form>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

@@ -2,12 +2,15 @@
   body{
     background-color: #F6F5F5;
     margin:0;
+    max-width:100%;
+    color:#707070;
   }
   header{
     color: #3A8B46;
     background-color: #F8EDE7;
     margin: 0;
     padding: 15px 0;
+    display:none !important;
   }
   .header_title{
     text-align: center;
@@ -17,18 +20,20 @@
     width: 90%;
     height: 80%;
     margin: 0 auto;
-    position: absolute;
-    right: 10%;
-    top: 10%;
+    /* position: absolute; */
+    /* right: 10%;
+    top: 10%; */
   }
   footer{
     text-align: right;
     margin: 5%;
-    bottom: 0;
-    right: 0;
+    /* bottom: 0;
+    right: 0; */
   }
   h1{
     font-size: 24px;
+    text-align: center;
+    padding:1.5rem 0;
   }
   h2{
     font-size: 17px;
@@ -46,13 +51,16 @@
     font-size: 1.0rem
   }
   .floor-title {
-    font-size: 2.0rem
+    font-size: 1.25rem;
+    color:#707070;
+    font-feature-settings: "palt";
   }
   .floor-description {
+    color:#707070;
     font-size: 1.0rem
   }
   .area-title {
-    font-size: 1.2rem
+    font-size: 1.25rem
   }
   .area-description {
     font-size: 0.8rem
@@ -60,5 +68,57 @@
   .form-container {
     width: 90%;
     margin: 0 auto;
+  }
+  .input-date{
+    display:flex;
+    align-items: baseline;
+    width:90%;
+    margin:auto;
+  }
+  .input-date label{
+    display:block;
+    min-width: fit-content;
+    margin-right: 0.5em;
+  }
+  .input-date input {
+    border: none;
+    border-bottom: solid 1px #ddd;
+    border-radius: 0;
+    text-align: center;
+  }
+  .form-check{
+    display:flex;
+  }
+  .form-check p{
+    margin:0;
+  }
+  .form-check input{
+    width:1em;
+    height:1em;
+  }
+  form .send-btn{
+    display:block;
+    margin:2rem auto ;
+    background-color:#000;
+    color:#fff;
+    padding:1rem 3.5rem;
+  }
+  .form-group-img{
+    text-align: center;
+    margin-bottom:1em;
+  }
+  .form-group-img p{
+    text-align: left;
+  }
+  .form-group-img input{
+    display:none;
+  }
+  .form-group-img label{
+    border:solid 1px #ddd;
+    padding:0.2em 1.5em;
+    border-radius: 5px;;
+    background-color: #F3F3F3;
+    color:#707070;
+    font-size:1rem ;
   }
 </style>
